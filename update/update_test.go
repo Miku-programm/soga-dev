@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -57,7 +58,7 @@ func TestReleaseRTTIAndTime(t *testing.T) {
 func TestReleaseRetryAndActualLocalHTTP(t *testing.T) {
 	calls := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" || r.URL.Path != "/repos/vaxilu/soga/releases/latest" {
+		if r.Method != "GET" || r.URL.Path != "/repos/Miku-programm/soga-dev/releases/latest" {
 			t.Errorf("request %v", r)
 		}
 		w.WriteHeader(503) // 原实现不按 HTTP 状态判错。
@@ -67,7 +68,7 @@ func TestReleaseRetryAndActualLocalHTTP(t *testing.T) {
 	endpoint, _ := url.Parse(server.URL)
 	isolatedHTTP(t, func(r *http.Request) (*http.Response, error) {
 		calls++
-		if r.URL.String() != "https://api.github.com/repos/vaxilu/soga/releases/latest" {
+		if r.URL.String() != "https://api.github.com/repos/Miku-programm/soga-dev/releases/latest" {
 			t.Fatalf("unexpected URL %s", r.URL)
 		}
 		if calls < 3 {
@@ -134,12 +135,12 @@ func TestDownloadExactURLReadErrorOverwriteAndCleanup(t *testing.T) {
 		t.Run(map[bool]string{false: "write_overwrites_read_error", true: "read_failure_removes_file"}[fail], func(t *testing.T) {
 			body := &downloadBody{firstError: errors.New("partial read failure intentionally overwritten"), fail: fail}
 			isolatedHTTP(t, func(r *http.Request) (*http.Response, error) {
-				if r.Method != "GET" || r.URL.String() != "https://github.com/vaxilu/soga/releases/download/2.17.0/soga-linux-amd64.tar.gz" {
+				if r.Method != "GET" || r.URL.String() != "https://github.com/Miku-programm/soga-dev/releases/download/v2.17.0/soga-linux-"+runtime.GOARCH+".tar.gz" {
 					t.Fatalf("request %s %s", r.Method, r.URL)
 				}
 				return &http.Response{StatusCode: 404, Header: make(http.Header), Body: body}, nil
 			})
-			name, e := bYg0ELm("2.17.0")
+			name, e := bYg0ELm("v2.17.0")
 			if body.closed != 1 || body.reads != 2 {
 				t.Fatal(body)
 			}
@@ -253,5 +254,22 @@ func TestUpdateFailureAndCancelledStartNeverTouchRemoteOrInstallation(t *testing
 	time.Sleep(20 * time.Millisecond)
 	if calls != 1 {
 		t.Fatal("unexpected immediate update request")
+	}
+}
+
+func TestSameVersionIgnoresTagPrefix(t *testing.T) {
+	for _, c := range []struct {
+		latest, current string
+		same            bool
+	}{
+		{"v2.17.0", "2.17.0", true},
+		{"2.17.0", "2.17.0", true},
+		{"v2.17.0", "v2.17.0", true},
+		{"v2.17.1", "2.17.0", false},
+		{"2.18.0", "2.17.0", false},
+	} {
+		if sameVersion(c.latest, c.current) != c.same {
+			t.Fatal(c)
+		}
 	}
 }

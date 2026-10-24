@@ -72,7 +72,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o sog
 
 ## 注意
 
-配置项 `auto_update=true` 时，程序内置的自动更新会从 `vaxilu/soga` 的官方 Release 下载并覆盖 `/usr/local/soga/`，而不是本仓库的构建。如需使用本仓库的版本，请保持 `auto_update=false`，用 `soga update` 更新。
+配置项 `auto_update=true` 时，程序每 24 小时检查一次本仓库的最新 Release，发布超过 72 小时的新版本会自动下载、覆盖 `/usr/local/soga/` 并执行 `soga restart`。
 
 ## License
 

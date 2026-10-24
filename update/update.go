@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"runtime"
 	"strings"
 	"time"
 
@@ -19,6 +20,9 @@ import (
 	C "recovered.local/soga/config"
 	logx "recovered.local/soga/util/logx"
 )
+
+// releaseRepository 是自动更新检查与下载的 GitHub 仓库（原程序为 vaxilu/soga）。
+const releaseRepository = "Miku-programm/soga-dev"
 
 // 原 RTTI 类型名前缀为 j48VWvOD5LA9，uncommon_package_path 为 I46ita；
 // 使用实际函数所属包表达该类型，不伪称恢复了作者原目录。
@@ -42,7 +46,7 @@ func m_33LUULr2() (string, time.Time, error) {
 	var data []byte
 	var err error
 	for i := 0; i < 3; i++ {
-		_, data, _, err = G6.IlWBbp1xdPw("https://api.github.com/repos/vaxilu/soga/releases/latest", nil, nil)
+		_, data, _, err = G6.IlWBbp1xdPw("https://api.github.com/repos/"+releaseRepository+"/releases/latest", nil, nil)
 		if err == nil {
 			break
 		}
@@ -57,9 +61,10 @@ func m_33LUULr2() (string, time.Time, error) {
 	return release.UlWjg9iuG, release.PublishTime(), nil
 }
 
-// bYg0ELm 对应 0x1f0b8a0。linux/amd64 是此样本实际编译常量。
+// bYg0ELm 对应 0x1f0b8a0。原样本固定下载 linux/amd64，这里按编译架构选择安装包。
+// version 为 Release 的 tag 原文，例如 v2.17.0。
 func bYg0ELm(version string) (string, error) {
-	address := fmt.Sprintf("https://github.com/vaxilu/soga/releases/download/%s/soga-%v-%v.tar.gz", version, "linux", "amd64")
+	address := fmt.Sprintf("https://github.com/%s/releases/download/%s/soga-%v-%v.tar.gz", releaseRepository, version, "linux", runtime.GOARCH)
 	response, err := G6.RequestFromRecoveredCall(address, "GET", nil, nil, nil, "")
 	if err != nil {
 		return "", err
@@ -193,6 +198,11 @@ func g0x1jn(version string) {
 	if err != nil {
 		logx.TRTbrquD(8, "soga restart failed:", err)
 	}
+}
+
+// sameVersion 忽略 tag 的 v 前缀比较版本：Release tag 为 v2.17.0，程序版本为 2.17.0。
+func sameVersion(latest, current string) bool {
+	return strings.TrimPrefix(latest, "v") == strings.TrimPrefix(current, "v")
 }
 
 // ZAWxLZe5zfNN 对应 0x1f0cd40 / func1@0x1f17480。
