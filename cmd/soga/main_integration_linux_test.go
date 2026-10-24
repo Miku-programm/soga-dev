@@ -1,0 +1,465 @@
+package main
+
+import (
+	"bytes"
+	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/md5"
+	"crypto/rand"
+	"crypto/sha1"
+	"crypto/sha256"
+	"encoding/binary"
+	"encoding/json"
+	"fmt"
+	"golang.org/x/crypto/hkdf"
+	"io"
+	"net"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
+	"strconv"
+	"strings"
+	"sync/atomic"
+	"syscall"
+	"testing"
+	"time"
+)
+
+// This executes a freshly built cmd/soga, never the supplied ELF. The fixture
+// lives inside user/network/mount namespaces. Its network contains only lo;
+// /etc is a bind-mounted temporary tree because original main initializes geo
+// data at hard-coded paths before reading the configurable file flags.
+func TestRebuiltMainPanelSignalsAndNativeTCPUDP(t *testing.T) {
+	if os.Getenv("SOGA_MAIN_INTEGRATION_ROLE") == "fixture" {
+		runMainNetworkFixture(t)
+		return
+	}
+	if testing.Short() {
+		t.Skip("builds real application and uses Linux namespaces")
+	}
+	for _, tool := range []string{"unshare", "mount", "ip"} {
+		if _, e := exec.LookPath(tool); e != nil {
+			t.Skipf("namespace integration unavailable: %s", tool)
+		}
+	}
+	if out, e := exec.Command("unshare", "-Urnm", "true").CombinedOutput(); e != nil {
+		t.Skipf("namespace permission unavailable: %v %s", e, out)
+	}
+	dir := t.TempDir()
+	etc := filepath.Join(dir, "etc")
+	if e := os.MkdirAll(filepath.Join(etc, "soga"), 0700); e != nil {
+		t.Fatal(e)
+	}
+	for name, data := range map[string]string{"hosts": "127.0.0.1 localhost\n::1 localhost\n", "resolv.conf": "nameserver 127.0.0.1\noptions timeout:1 attempts:1\n", "nsswitch.conf": "hosts: files dns\n"} {
+		if e := os.WriteFile(filepath.Join(etc, name), []byte(data), 0600); e != nil {
+			t.Fatal(e)
+		}
+	}
+	module, e := filepath.Abs("../..")
+	if e != nil {
+		t.Fatal(e)
+	}
+	binaryPath := filepath.Join(dir, "soga-rebuilt")
+	goBinary := filepath.Join(runtime.GOROOT(), "bin", "go")
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
+	defer cancel()
+	build := exec.CommandContext(ctx, goBinary, "run", "./buildhttp", "-go", goBinary, "build", "-o", binaryPath, "./cmd/soga")
+	build.Dir = module
+	if out, e := build.CombinedOutput(); e != nil {
+		t.Fatalf("build source application: %v\n%s", e, out)
+	}
+	compiled, e := os.ReadFile(binaryPath)
+	if e != nil {
+		t.Fatal(e)
+	}
+	t.Logf("rebuilt cmd/soga SHA256: %x", sha256.Sum256(compiled))
+	script := `set -eu
+mount --make-rprivate /
+mount --bind "$1" /etc
+ip link set lo up
+exec "$2" -test.run=^TestRebuiltMainPanelSignalsAndNativeTCPUDP$ -test.v -test.timeout=90s`
+	child := exec.CommandContext(ctx, "unshare", "-Urnm", "sh", "-c", script, "fixture", etc, os.Args[0])
+	child.Env = append(os.Environ(), "SOGA_MAIN_INTEGRATION_ROLE=fixture", "SOGA_MAIN_INTEGRATION_BINARY="+binaryPath, "SOGA_MAIN_INTEGRATION_DIR="+dir)
+	out, e := child.CombinedOutput()
+	t.Logf("isolated application fixture:\n%s", out)
+	if e != nil {
+		t.Fatalf("isolated main: %v", e)
+	}
+}
+
+func runMainNetworkFixture(t *testing.T) {
+	interfaces, e := net.Interfaces()
+	if e != nil {
+		t.Fatal(e)
+	}
+	for _, i := range interfaces {
+		if i.Name != "lo" {
+			t.Fatalf("unexpected external interface %s", i.Name)
+		}
+	}
+	routes, e := os.ReadFile("/proc/net/route")
+	if e != nil || len(strings.Fields(string(routes))) != 11 {
+		t.Fatalf("unexpected routes: %s (%v)", routes, e)
+	}
+	// Answer only in this namespace. NXDOMAIN makes original mandatory NTP
+	// resolution fail promptly; no NTP clock or license check is replaced.
+	dns, e := net.ListenPacket("udp4", "127.0.0.1:53")
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer dns.Close()
+	go func() {
+		b := make([]byte, 2048)
+		for {
+			n, a, e := dns.ReadFrom(b)
+			if e != nil {
+				return
+			}
+			if n < 12 {
+				continue
+			}
+			p := append([]byte{}, b[:n]...)
+			p[2] = 0x81
+			p[3] = 0x83
+			for i := 6; i < 12; i++ {
+				p[i] = 0
+			}
+			dns.WriteTo(p, a)
+		}
+	}()
+	tcp, e := net.Listen("tcp4", "127.0.0.1:0")
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer tcp.Close()
+	go func() {
+		for {
+			c, e := tcp.Accept()
+			if e != nil {
+				return
+			}
+			go func() { defer c.Close(); c.SetDeadline(time.Now().Add(5 * time.Second)); io.Copy(c, c) }()
+		}
+	}()
+	udp, e := net.ListenPacket("udp4", "127.0.0.1:0")
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer udp.Close()
+	go func() {
+		b := make([]byte, 65535)
+		for {
+			n, a, e := udp.ReadFrom(b)
+			if e != nil {
+				return
+			}
+			udp.WriteTo(b[:n], a)
+		}
+	}()
+	port1, port2 := mainFixturePort(t), mainFixturePort(t)
+	const password = "01234567-89ab-cdef-0123-456789abcdef"
+	var userVersion atomic.Int64
+	var config71, config72, userGets, pushes, trafficUp, trafficDown atomic.Int64
+	var panelError atomic.Pointer[string]
+	panel := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		id := q.Get("node_id")
+		key := "local-key-one"
+		port := port1
+		if id == "72" {
+			key = "local-key-two"
+			port = port2
+		}
+		if (id != "71" && id != "72") || q.Get("node_type") != "shadowsocks" || q.Get("token") != key {
+			s := r.URL.String()
+			panelError.Store(&s)
+			http.Error(w, "wrong panel query", 400)
+			return
+		}
+		switch strings.TrimPrefix(r.URL.Path, "/api/v1/server/UniProxy/") {
+		case "config":
+			if id == "71" {
+				config71.Add(1)
+			} else {
+				config72.Add(1)
+			}
+			fmt.Fprintf(w, `{"server_port":%d,"cipher":"aes-128-gcm","base_config":{"pull_interval":1,"push_interval":1}}`, port)
+		case "user":
+			userGets.Add(1)
+			credential := password
+			if userVersion.Load() != 0 {
+				credential = "replacement-user-password"
+			}
+			fmt.Fprintf(w, `{"users":[{"id":13,"uuid":%q,"speed_limit":0,"device_limit":0}]}`, credential)
+		case "push":
+			pushes.Add(1)
+			var entries map[string][2]int64
+			if e := json.NewDecoder(r.Body).Decode(&entries); e != nil {
+				s := e.Error()
+				panelError.Store(&s)
+			}
+			for _, v := range entries {
+				trafficUp.Add(v[0])
+				trafficDown.Add(v[1])
+			}
+			fmt.Fprint(w, "ok")
+		case "alive":
+			fmt.Fprint(w, "ok")
+		default:
+			s := r.URL.Path
+			panelError.Store(&s)
+			http.NotFound(w, r)
+		}
+	}))
+	defer panel.Close()
+	dir := os.Getenv("SOGA_MAIN_INTEGRATION_DIR")
+	config := filepath.Join(dir, "soga.conf")
+	writeConfig := func(id int, key string) {
+		text := fmt.Sprintf("type=xiaov2board\nserver_type=ss\napi=webapi\nwebapi_url=%s\nwebapi_key=%s\nnode_id=%d\nlisten=127.0.0.1\ncheck_interval=1\nsubmit_interval=1\nrandom_interval_range=0\nauto_update=false\ngeo_update_enable=false\naccess_log_enable=false\nlog_file_dir=\nlog_level=debug\nproxy_protocol=false\nudp_proxy_protocol=false\ndy_limit_enable=false\nban_private_ip=false\nforbidden_bit_torrent=false\ntcp_timeout=2\nudp_timeout=2\n", panel.URL, key, id)
+		if e := os.WriteFile(config, []byte(text), 0600); e != nil {
+			t.Fatal(e)
+		}
+	}
+	writeConfig(71, "local-key-one")
+	args := []string{"-c", config, "-soga_key", ""}
+	for _, f := range []string{"b", "w", "d", "r"} {
+		p := filepath.Join(dir, f)
+		if e := os.WriteFile(p, nil, 0600); e != nil {
+			t.Fatal(e)
+		}
+		args = append(args, "-"+f, p)
+	}
+	logPath := filepath.Join(dir, "application.log")
+	log, e := os.Create(logPath)
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer log.Close()
+	app := exec.Command(os.Getenv("SOGA_MAIN_INTEGRATION_BINARY"), args...)
+	app.SysProcAttr = &syscall.SysProcAttr{Pdeathsig: syscall.SIGKILL}
+	app.Stdout = log
+	app.Stderr = log
+	app.Env = append(os.Environ(), "HTTP_PROXY=", "HTTPS_PROXY=", "ALL_PROXY=", "http_proxy=", "https_proxy=", "all_proxy=", "NO_PROXY=*", "no_proxy=*")
+	if e = app.Start(); e != nil {
+		t.Fatal(e)
+	}
+	defer func() { _ = app.Process.Kill() }()
+	exited := make(chan error, 1)
+	go func() { exited <- app.Wait() }()
+	defer func() {
+		b, _ := os.ReadFile(logPath)
+		if t.Failed() {
+			t.Logf("real application log:\n%s", b)
+		}
+	}()
+	wait := func(label string, condition func() bool) {
+		t.Helper()
+		deadline := time.Now().Add(20 * time.Second)
+		for {
+			if condition() {
+				return
+			}
+			select {
+			case e := <-exited:
+				t.Fatalf("application exited during %s: %v", label, e)
+			default:
+			}
+			if time.Now().After(deadline) {
+				t.Fatalf("timeout: %s", label)
+			}
+			time.Sleep(50 * time.Millisecond)
+		}
+	}
+	tcpTarget, udpTarget := tcp.Addr().(*net.TCPAddr).Port, udp.LocalAddr().(*net.UDPAddr).Port
+	var last error
+	wait("first real TCP relay", func() bool { last = mainFixtureRoundtrip("tcp", port1, tcpTarget, password); return last == nil })
+	if e = mainFixtureRoundtrip("udp", port1, udpTarget, password); e != nil {
+		t.Fatal("first UDP", e)
+	}
+	wait("traffic submission", func() bool { return trafficUp.Load() > 0 && trafficDown.Load() > 0 })
+	userVersion.Store(1)
+	wait("live panel user replacement", func() bool {
+		last = mainFixtureRoundtrip("tcp", port1, tcpTarget, "replacement-user-password")
+		return last == nil
+	})
+	if e = mainFixtureRoundtrip("udp", port1, udpTarget, "replacement-user-password"); e != nil {
+		t.Fatal("updated UDP", e)
+	}
+	if e = mainFixtureRoundtrip("tcp", port1, tcpTarget, password); e == nil {
+		t.Fatal("old credential remained accepted after panel replacement")
+	}
+	writeConfig(72, "local-key-two")
+	if e = app.Process.Signal(syscall.SIGUSR1); e != nil {
+		t.Fatal(e)
+	}
+	wait("SIGUSR1 reload node72 TCP", func() bool {
+		last = mainFixtureRoundtrip("tcp", port2, tcpTarget, "replacement-user-password")
+		return last == nil
+	})
+	if e = mainFixtureRoundtrip("udp", port2, udpTarget, "replacement-user-password"); e != nil {
+		t.Fatal("reloaded UDP", e)
+	}
+	wait("old listener release", func() bool {
+		c, e := net.DialTimeout("tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(port1)), 100*time.Millisecond)
+		if e == nil {
+			c.Close()
+		}
+		return e != nil
+	})
+	if config71.Load() == 0 || config72.Load() == 0 || userGets.Load() < 3 || pushes.Load() == 0 {
+		t.Fatal("missing panel lifecycle", config71.Load(), config72.Load(), userGets.Load(), pushes.Load())
+	}
+	if p := panelError.Load(); p != nil {
+		t.Fatal("panel", *p)
+	}
+	if e = app.Process.Signal(syscall.SIGTERM); e != nil {
+		t.Fatal(e)
+	}
+	select {
+	case e = <-exited:
+		if e != nil {
+			t.Fatal("TERM exit", e)
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("TERM timeout")
+	}
+	if c, e := net.DialTimeout("tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(port2)), 100*time.Millisecond); e == nil {
+		c.Close()
+		t.Fatal("listener survived process exit")
+	}
+	appLog, e := os.ReadFile(logPath)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if strings.Count(string(appLog), "load config <"+config+"> success") < 2 {
+		t.Fatal("missing real initial/reload configuration logs", string(appLog))
+	}
+	t.Logf("real main verified: node71/config=%d node72/config=%d user pulls=%d traffic pushes=%d upload=%d download=%d; TCP+UDP before/after user update and SIGUSR1; TERM exit0; only lo", config71.Load(), config72.Load(), userGets.Load(), pushes.Load(), trafficUp.Load(), trafficDown.Load())
+}
+func mainFixturePort(t *testing.T) int {
+	t.Helper()
+	for i := 0; i < 10; i++ {
+		l, e := net.Listen("tcp4", "127.0.0.1:0")
+		if e != nil {
+			t.Fatal(e)
+		}
+		p := l.Addr().(*net.TCPAddr).Port
+		u, e := net.ListenPacket("udp4", l.Addr().String())
+		l.Close()
+		if e == nil {
+			u.Close()
+			return p
+		}
+	}
+	t.Fatal("cannot reserve port")
+	return 0
+}
+
+// Independent test-side SIP004 AES-128-GCM encoder; no MFF or server internals
+// are imported or patched to make authentication or policy pass.
+func mainFixtureAEAD(password string, salt []byte) cipher.AEAD {
+	key := md5.Sum([]byte(password))
+	sub := make([]byte, 16)
+	if _, e := io.ReadFull(hkdf.New(sha1.New, key[:], salt, []byte("ss-subkey")), sub); e != nil {
+		panic(e)
+	}
+	b, e := aes.NewCipher(sub)
+	if e != nil {
+		panic(e)
+	}
+	a, e := cipher.NewGCM(b)
+	if e != nil {
+		panic(e)
+	}
+	return a
+}
+func mainFixtureNonce(p []byte) {
+	for i := range p {
+		p[i]++
+		if p[i] != 0 {
+			return
+		}
+	}
+}
+func mainFixtureRoundtrip(network string, proxyPort, targetPort int, password string) error {
+	c, e := net.DialTimeout(network, net.JoinHostPort("127.0.0.1", strconv.Itoa(proxyPort)), 200*time.Millisecond)
+	if e != nil {
+		return e
+	}
+	defer c.Close()
+	c.SetDeadline(time.Now().Add(time.Second))
+	payload := bytes.Repeat([]byte("original-main-relay"), 40)
+	address := binary.BigEndian.AppendUint16([]byte{1, 127, 0, 0, 1}, uint16(targetPort))
+	plain := append(address, payload...)
+	salt := make([]byte, 16)
+	if _, e = rand.Read(salt); e != nil {
+		return e
+	}
+	a := mainFixtureAEAD(password, salt)
+	nonce := make([]byte, 12)
+	var wire []byte
+	if network == "udp" {
+		wire = a.Seal(salt, nonce, plain, nil)
+	} else {
+		wire = a.Seal(salt, nonce, binary.BigEndian.AppendUint16(nil, uint16(len(plain))), nil)
+		mainFixtureNonce(nonce)
+		wire = append(wire, a.Seal(nil, nonce, plain, nil)...)
+	}
+	if _, e = c.Write(wire); e != nil {
+		return e
+	}
+	if network == "udp" {
+		b := make([]byte, 4096)
+		n, e := c.Read(b)
+		if e != nil {
+			return e
+		}
+		if n < 32 {
+			return io.ErrUnexpectedEOF
+		}
+		a = mainFixtureAEAD(password, b[:16])
+		p, e := a.Open(nil, make([]byte, 12), b[16:n], nil)
+		if e != nil {
+			return e
+		}
+		if !bytes.Equal(p, plain) {
+			return fmt.Errorf("UDP content mismatch")
+		}
+		return nil
+	}
+	if _, e = io.ReadFull(c, salt); e != nil {
+		return e
+	}
+	a = mainFixtureAEAD(password, salt)
+	nonce = make([]byte, 12)
+	var got []byte
+	for len(got) < len(payload) {
+		h := make([]byte, 18)
+		if _, e = io.ReadFull(c, h); e != nil {
+			return e
+		}
+		h, e = a.Open(nil, nonce, h, nil)
+		if e != nil {
+			return e
+		}
+		mainFixtureNonce(nonce)
+		p := make([]byte, int(binary.BigEndian.Uint16(h))+16)
+		if _, e = io.ReadFull(c, p); e != nil {
+			return e
+		}
+		p, e = a.Open(nil, nonce, p, nil)
+		if e != nil {
+			return e
+		}
+		mainFixtureNonce(nonce)
+		got = append(got, p...)
+	}
+	if !bytes.Equal(got, payload) {
+		return fmt.Errorf("TCP content mismatch")
+	}
+	return nil
+}
