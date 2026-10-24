@@ -93,7 +93,9 @@ install_soga() {
     trap 'rm -rf "$TMP_DIR"' EXIT
     tmp="$TMP_DIR"
     download_tarball "$version" "$arch" "$tmp/soga.tar.gz"
-    tar -xzf "$tmp/soga.tar.gz" -C "$tmp" || die "解压安装包失败"
+    # --no-same-owner: 以 root 身份解压时忽略包内记录的 uid/gid，文件归 root 所有，
+    # 避免打包者 uid 不同（或受限命名空间内）导致 chown 失败。
+    tar --no-same-owner -xzf "$tmp/soga.tar.gz" -C "$tmp" || die "解压安装包失败"
     [[ -x "$tmp/soga/soga" ]] || die "安装包内缺少 soga/soga"
 
     # 二进制与附带文件整体替换；/etc/soga 下的配置不受影响

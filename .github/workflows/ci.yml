@@ -29,7 +29,7 @@ jobs:
           cp release/soga.sh release/soga.service release/soga@.service release/soga.conf \
              release/blockList release/whiteList release/dns.yml release/routes.toml pkg/soga/
           chmod +x pkg/soga/soga pkg/soga/soga.sh
-          tar -C pkg -czf soga-linux-${{ matrix.goarch }}.tar.gz soga
+          tar --owner=0 --group=0 -C pkg -czf soga-linux-${{ matrix.goarch }}.tar.gz soga
           tar -tzvf soga-linux-${{ matrix.goarch }}.tar.gz
       - uses: actions/upload-artifact@v4
         with:
