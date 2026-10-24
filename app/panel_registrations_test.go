@@ -1,0 +1,87 @@
+package app
+
+import (
+	C "recovered.local/soga/config"
+	Q "recovered.local/soga/panel/registry"
+	"testing"
+)
+
+// 固定表来自原 ELF 的 52 个注册调用，验证主入口真正导入全部注册包。
+func TestAllOriginalPanelRegistrations(t *testing.T) {
+	expected := []struct{ key, panel, protocol, api string }{
+		{"dj-v2ray-webapi", "dj", "v2ray", "webapi"},                         // userhash.init.0 0x169efa0
+		{"ppanel-hysteria-webapi", "ppanel", "hysteria", "webapi"},           // ppanelhysteriawebapi.init.0 0x16b8400
+		{"ppanel-ss-webapi", "ppanel", "ss", "webapi"},                       // ppanelsswebapi.init.0 0x16b84c0
+		{"ppanel-trojan-webapi", "ppanel", "trojan", "webapi"},               // ppaneltrojanwebapi.init.0 0x16b8580
+		{"ppanel-v2ray-webapi", "ppanel", "v2ray", "webapi"},                 // ppanelv2raywebapi.init.0 0x16b8700
+		{"ppanel-vless-webapi", "ppanel", "vless", "webapi"},                 // ppanelvlesswebapi.init.0 0x16b8640
+		{"proxypanel-ssr-webapi", "proxypanel", "ssr", "webapi"},             // proxypanelnode.init.0 0x16c2520
+		{"proxypanel-trojan-webapi", "proxypanel", "trojan", "webapi"},       // whmcsnode.init.0 0x16c92a0
+		{"proxypanel-v2ray-webapi", "proxypanel", "v2ray", "webapi"},         // v2boardnode.init.0 0x16cf400
+		{"soga-v1-anytls-webapi", "soga-v1", "anytls", "webapi"},             // sogav1anytlswebapi.init.0 0x16e7760
+		{"soga-v1-hysteria-webapi", "soga-v1", "hysteria", "webapi"},         // sogav1hysteriawebapi.init.0 0x16e7820
+		{"soga-v1-mieru-webapi", "soga-v1", "mieru", "webapi"},               // sogav1mieruwebapi.init.0 0x16e78e0
+		{"soga-v1-ss-webapi", "soga-v1", "ss", "webapi"},                     // sogav1sswebapi.init.0 0x16e79a0
+		{"soga-v1-ssr-webapi", "soga-v1", "ssr", "webapi"},                   // sogav1ssrwebapi.init.0 0x16e7a60
+		{"soga-v1-trojan-webapi", "soga-v1", "trojan", "webapi"},             // sogav1trojanwebapi.init.0 0x16e7b20
+		{"soga-v1-v2ray-webapi", "soga-v1", "v2ray", "webapi"},               // sogav1v2raywebapi.init.0 0x16e7ca0
+		{"soga-v1-vless-webapi", "soga-v1", "vless", "webapi"},               // sogav1vlesswebapi.init.0 0x16e7be0
+		{"sspanel-uim-ss-db", "sspanel-uim", "ss", "db"},                     // sspanelss.init.0 0x1737480
+		{"sspanel-uim-ss-webapi", "sspanel-uim", "ss", "webapi"},             // sspanelss.init.1 0x17397a0
+		{"sspanel-uim-ssr-db", "sspanel-uim", "ssr", "db"},                   // sspanelssr.init.0 0x173b600
+		{"sspanel-uim-ssr-webapi", "sspanel-uim", "ssr", "webapi"},           // sspanelssr.init.1 0x173ccc0
+		{"sspanel-uim-trojan-db", "sspanel-uim", "trojan", "db"},             // sspaneltrojan.init.0 0x173fe20
+		{"sspanel-uim-trojan-webapi", "sspanel-uim", "trojan", "webapi"},     // sspaneltrojan.init.1 0x1740cc0
+		{"sspanel-uim-v2ray-db", "sspanel-uim", "v2ray", "db"},               // sspanelv2ray.init.0 0x17418a0
+		{"sspanel-uim-v2ray-webapi", "sspanel-uim", "v2ray", "webapi"},       // sspanelv2ray.init.1 0x1742780
+		{"v2board-ss-webapi", "v2board", "ss", "webapi"},                     // v2boardsswebapi.init.0 0x174e240
+		{"v2board-trojan-webapi", "v2board", "trojan", "webapi"},             // v2boardtrojanwebapi.init.0 0x174e300
+		{"v2board-v2ray-webapi", "v2board", "v2ray", "webapi"},               // v2boardv2raywebapi.init.0 0x174e3c0
+		{"v2raysocks-ss-webapi", "v2raysocks", "ss", "webapi"},               // v2raysockssswebapi.init.0 0x175b800
+		{"v2raysocks-trojan-webapi", "v2raysocks", "trojan", "webapi"},       // v2raysockstrojanwebapi.init.0 0x175b8c0
+		{"v2raysocks-v2ray-webapi", "v2raysocks", "v2ray", "webapi"},         // v2raysocksv2raywebapi.init.0 0x175ba40
+		{"v2raysocks-vless-webapi", "v2raysocks", "vless", "webapi"},         // v2raysocksvlesswebapi.init.0 0x175b980
+		{"whmcs-ss-db", "whmcs", "ss", "db"},                                 // sogav1node.init.0 0x1769be0
+		{"whmcs-ss-webapi", "whmcs", "ss", "webapi"},                         // sogav1node.init.1 0x1771420
+		{"whmcs-ssr-db", "whmcs", "ssr", "db"},                               // ppanelnode.init.0 0x17716e0
+		{"whmcs-trojan-db", "whmcs", "trojan", "db"},                         // xboardnode.init.0 0x177a800
+		{"whmcs-trojan-webapi", "whmcs", "trojan", "webapi"},                 // xboardnode.init.1 0x1781480
+		{"whmcs-v2ray-db", "whmcs", "v2ray", "db"},                           // xiaov2boardnode.init.0 0x1781600
+		{"whmcs-v2ray-webapi", "whmcs", "v2ray", "webapi"},                   // xiaov2boardnode.init.1 0x1788440
+		{"xboard-anytls-webapi", "xboard", "anytls", "webapi"},               // xboardanytlswebapi.init.0 0x179b3e0
+		{"xboard-hysteria-webapi", "xboard", "hysteria", "webapi"},           // xboardhysteriawebapi.init.0 0x179b4a0
+		{"xboard-mieru-webapi", "xboard", "mieru", "webapi"},                 // xboardmieruwebapi.init.0 0x179b560
+		{"xboard-ss-webapi", "xboard", "ss", "webapi"},                       // xboardsswebapi.init.0 0x179b620
+		{"xboard-trojan-webapi", "xboard", "trojan", "webapi"},               // xboardtrojanwebapi.init.0 0x179b6e0
+		{"xboard-v2ray-webapi", "xboard", "v2ray", "webapi"},                 // xboardv2raywebapi.init.0 0x179b860
+		{"xboard-vless-webapi", "xboard", "vless", "webapi"},                 // xboardvlesswebapi.init.0 0x179b7a0
+		{"xiaov2board-anytls-webapi", "xiaov2board", "anytls", "webapi"},     // xiaov2boardanytlswebapi.init.0 0x17b0040
+		{"xiaov2board-hysteria-webapi", "xiaov2board", "hysteria", "webapi"}, // xiaov2boardhysteriawebapi.init.0 0x17b0100
+		{"xiaov2board-ss-webapi", "xiaov2board", "ss", "webapi"},             // xiaov2boardsswebapi.init.0 0x17b01c0
+		{"xiaov2board-trojan-webapi", "xiaov2board", "trojan", "webapi"},     // xiaov2boardtrojanwebapi.init.0 0x17b0280
+		{"xiaov2board-v2ray-webapi", "xiaov2board", "v2ray", "webapi"},       // xiaov2boardv2raywebapi.init.0 0x17b0400
+		{"xiaov2board-vless-webapi", "xiaov2board", "vless", "webapi"},       // xiaov2boardvlesswebapi.init.0 0x17b0340
+	}
+	if len(Q.PanelFactoriesAt5095E50) != len(expected) {
+		t.Errorf("main registered %d combinations; original has %d", len(Q.PanelFactoriesAt5095E50), len(expected))
+	}
+	for _, tc := range expected {
+		t.Run(tc.key, func(t *testing.T) {
+			if Q.PanelFactoriesAt5095E50[tc.key] == nil {
+				t.Fatal("original panel registration missing from actual main imports")
+			}
+			cfg := &C.FCEAfQJwDA7e{OS91X026uML: C.FSOZSH7g(tc.panel), ZyAhkq5th8bf: C.Mpn2JltM(tc.protocol), F3PCiaIra: C.HWLVDK2(tc.api), Yf1KqSqJpNI7: 17}
+			panel, err := Q.SMkpVNb(cfg)
+			if err != nil || panel == nil {
+				t.Fatalf("actual constructor: %T %v", panel, err)
+			}
+			if panel.GetAPIConfig() != cfg {
+				t.Fatal("constructor did not preserve original configuration pointer")
+			}
+			second, err := Q.SMkpVNb(cfg)
+			if err != nil || second == panel {
+				t.Fatalf("independent allocation: %T %v", second, err)
+			}
+		})
+	}
+}

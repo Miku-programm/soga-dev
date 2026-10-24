@@ -1,0 +1,55 @@
+package app
+
+// These original registration packages now point to a fully restored panel.
+// Further original panel families are added as their implementations close.
+import (
+	_ "recovered.local/soga/panel/reg/ppaneltrojanwebapi"
+	_ "recovered.local/soga/panel/v2boardnode"
+	_ "recovered.local/soga/panel/sspanelss"
+	_ "recovered.local/soga/panel/reg/ppanelhysteriawebapi"
+	_ "recovered.local/soga/panel/reg/v2raysockssswebapi"
+	_ "recovered.local/soga/panel/reg/v2raysocksv2raywebapi"
+	_ "recovered.local/soga/panel/xboardnode"
+	_ "recovered.local/soga/panel/sogav1node"
+	_ "recovered.local/soga/panel/proxypanelnode"
+	_ "recovered.local/soga/panel/xiaov2boardnode"
+	_ "recovered.local/soga/panel/sspaneltrojan"
+	_ "recovered.local/soga/panel/ppanelnode"
+	_ "recovered.local/soga/panel/sspanelssr"
+	_ "recovered.local/soga/panel/reg/v2raysocksvlesswebapi"
+	_ "recovered.local/soga/panel/reg/ppanelvlesswebapi"
+	_ "recovered.local/soga/panel/whmcsnode"
+	_ "recovered.local/soga/panel/reg/ppanelsswebapi"
+	_ "recovered.local/soga/panel/reg/ppanelv2raywebapi"
+	_ "recovered.local/soga/panel/sspanelv2ray"
+	_ "recovered.local/soga/panel/reg/v2raysockstrojanwebapi"
+
+	_ "recovered.local/soga/panel/reg/sogav1sswebapi"
+	_ "recovered.local/soga/panel/reg/sogav1trojanwebapi"
+	_ "recovered.local/soga/panel/reg/sogav1vlesswebapi"
+	_ "recovered.local/soga/panel/reg/sogav1ssrwebapi"
+	_ "recovered.local/soga/panel/reg/sogav1v2raywebapi"
+	_ "recovered.local/soga/panel/reg/sogav1mieruwebapi"
+	_ "recovered.local/soga/panel/reg/sogav1hysteriawebapi"
+	_ "recovered.local/soga/panel/userhash"
+	_ "recovered.local/soga/panel/reg/sogav1anytlswebapi"
+
+	_ "recovered.local/soga/panel/reg/xboardmieruwebapi"
+	_ "recovered.local/soga/panel/reg/xboardv2raywebapi"
+	_ "recovered.local/soga/panel/reg/xboardvlesswebapi"
+	_ "recovered.local/soga/panel/reg/xboardtrojanwebapi"
+	_ "recovered.local/soga/panel/reg/xboardhysteriawebapi"
+	_ "recovered.local/soga/panel/reg/xboardsswebapi"
+	_ "recovered.local/soga/panel/reg/xboardanytlswebapi"
+
+	_ "recovered.local/soga/panel/reg/xiaov2boardvlesswebapi"
+	_ "recovered.local/soga/panel/reg/xiaov2boardv2raywebapi"
+	_ "recovered.local/soga/panel/reg/xiaov2boardhysteriawebapi"
+	_ "recovered.local/soga/panel/reg/xiaov2boardtrojanwebapi"
+	_ "recovered.local/soga/panel/reg/xiaov2boardsswebapi"
+	_ "recovered.local/soga/panel/reg/xiaov2boardanytlswebapi"
+
+	_ "recovered.local/soga/panel/reg/v2boardv2raywebapi"
+	_ "recovered.local/soga/panel/reg/v2boardtrojanwebapi"
+	_ "recovered.local/soga/panel/reg/v2boardsswebapi"
+)

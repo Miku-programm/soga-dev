@@ -12,7 +12,7 @@ import (
 	"time"
 
 	utls "github.com/refraction-networking/utls"
-	proxyproto "recovered.local/soga/JcmlVIK0T0i"
+	proxyproto "recovered.local/soga/transport/proxyproto"
 )
 
 var GlobalPostHandshakeRecordsLens sync.Map

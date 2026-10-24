@@ -2,7 +2,7 @@ package errors
 
 import (
 	"context"
-	Log "recovered.local/soga/muc279Mpa6S4"
+	Log "recovered.local/soga/util/logx"
 	"strings"
 )
 

@@ -54,8 +54,8 @@ import (
 	"github.com/juju/ratelimit"
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/hkdf"
-	proxyproto "recovered.local/soga/JcmlVIK0T0i"
-	"recovered.local/soga/muc279Mpa6S4"
+	proxyproto "recovered.local/soga/transport/proxyproto"
+	"recovered.local/soga/util/logx"
 )
 
 type CloseWriteConn interface {
@@ -544,7 +544,7 @@ func NewListener(inner net.Listener, config *Config) net.Listener {
 					defer func() { recover() }()
 					c, err = Server(context.Background(), c, l.config)
 					if err != nil {
-						muc279Mpa6S4.TRTbrquD(-4, err)
+						logx.TRTbrquD(-4, err)
 						return
 					}
 					l.conns <- c

@@ -1,0 +1,9 @@
+// 原样本 init.0@0x16b8700 的注册项。
+package ppanelv2raywebapi
+
+import (
+	P "recovered.local/soga/panel/webapi"
+	Q "recovered.local/soga/panel/registry"
+)
+
+func init() { Q.PanelFactoriesAt5095E50["ppanel-v2ray-webapi"] = P.WF3vigUr }
