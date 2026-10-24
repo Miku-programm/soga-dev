@@ -59,7 +59,13 @@ func TestOriginalClientTLSConfigurationAndActualHandshake(t *testing.T) {
 			if mode == "configured" {
 				protocols = []string{"native"}
 			}
-			server := tls.Server(b, &tls.Config{Certificates: []tls.Certificate{cert}, NextProtos: protocols})
+			// 固定服务端为经典曲线，排除 X25519MLKEM768。utls v1.8.1 的随机指纹
+			// (Randomized) 会宣告 MLKEM768 却不一定发送对应 key share，Go 1.24+ 标准库
+			// 服务端默认优先 MLKEM768 并据此发起 HelloRetryRequest，而 utls 的 HRR 路径
+			// 不支持该组，握手约 30% 概率失败。随机指纹在 TLS 1.3 下必然包含 P-256/P-384/
+			// X25519，服务端限定经典曲线后总能命中双方共有组，握手稳定。这是测试侧约束，
+			// 不改动生产的 JZejsfshGB 指纹行为。
+			server := tls.Server(b, &tls.Config{Certificates: []tls.Certificate{cert}, NextProtos: protocols, CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256, tls.CurveP384, tls.CurveP521}})
 			done := make(chan error, 1)
 			go func() {
 				p := make([]byte, 4)
