@@ -275,7 +275,11 @@ cmd_config() {
     for kv in "$@"; do
         set_config "$conf" "$kv"
     done
-    echo "配置已修改，使用 soga restart $( [[ "$name" == "default" ]] || echo "$name") 使其生效"
+    if [[ "$name" == "default" ]]; then
+        echo "配置已修改，使用 soga restart 使其生效"
+    else
+        echo "配置已修改，使用 soga restart $name 使其生效"
+    fi
 }
 
 cmd_update() {

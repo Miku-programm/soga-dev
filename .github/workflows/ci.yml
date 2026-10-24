@@ -74,7 +74,7 @@ jobs:
           for f in blockList whiteList dns.yml routes.toml; do test -f /etc/soga/node2/$f; done
           sudo soga enable node2
           systemctl is-enabled soga@node2
-          systemctl cat soga@node2 | grep -q '/etc/soga/node2/soga.conf'
+          systemctl show -p ExecStart soga@node2 | grep -q '/etc/soga/node2/soga.conf'
           sudo soga list | grep -q node2
           if sudo soga new node2; then echo "duplicate instance accepted"; exit 1; fi
           sudo soga remove default; test -f /etc/soga/soga.conf
