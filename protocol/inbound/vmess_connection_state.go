@@ -5,7 +5,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"recovered.local/soga/util/rtx"
 	"recovered.local/soga/config"
 	"recovered.local/soga/crypto/rand"
 )
@@ -15,19 +14,11 @@ import (
 // backwards time and wraparound retain their original arithmetic. A failed
 // CAS is not retried. Neither the user count nor the failure count is atomic.
 func (v *K4avFiYOPi) sbbdX3aT6E() {
-	now := uint32(rtx.C5Jff5vs0())
 	userCountAt50C6DA0 = v.fUxO7UYAH
-	if claimConnectionStateCheck(&v.jfLH8mvq5e03, now) {
-		go v.checkVMessConnectionState()
-	}
 }
 
 func (v *K4avFiYOPi) bj10P7X() {
-	now := uint32(rtx.C5Jff5vs0())
 	userCountAt50C6DA0 = v.fUxO7UYAH
-	if claimConnectionStateCheck(&v.jfLH8mvq5e03, now) {
-		go v.checkVMessConnectionState()
-	}
 }
 
 func claimConnectionStateCheck(last *atomic.Uint32, now uint32) bool {

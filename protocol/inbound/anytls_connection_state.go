@@ -4,7 +4,6 @@ import (
 	"os"
 	"time"
 
-	"recovered.local/soga/util/rtx"
 	"recovered.local/soga/config"
 	"recovered.local/soga/crypto/rand"
 )
@@ -17,19 +16,11 @@ import (
 // effects agree with connectionStateResponse. The AnyTLS request entry is ogDnYO.
 // Neither the user count nor the failure count is atomic.
 func (v *R_n5ucb) sbbdX3aT6E() {
-	now := uint32(rtx.C5Jff5vs0())
 	userCountAt50C6DA0 = v.fUxO7UYAH
-	if claimConnectionStateCheck(&v.jfLH8mvq5e03, now) {
-		go v.checkAnyTLSConnectionState()
-	}
 }
 
 func (v *R_n5ucb) bj10P7X() {
-	now := uint32(rtx.C5Jff5vs0())
 	userCountAt50C6DA0 = v.fUxO7UYAH
-	if claimConnectionStateCheck(&v.jfLH8mvq5e03, now) {
-		go v.checkAnyTLSConnectionState()
-	}
 }
 
 func (v *R_n5ucb) checkAnyTLSConnectionState() {
