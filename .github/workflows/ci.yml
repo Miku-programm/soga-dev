@@ -7,6 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goarch: [amd64, arm64]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -14,15 +17,15 @@ jobs:
           go-version: '1.27'
           check-latest: true
       - run: go version
-      - name: build all packages
-        run: go build ./...
-      - name: build soga binary (linux/amd64)
-        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o soga ./cmd/soga
-      - run: ls -la soga && file soga
+      - name: build all packages (${{ matrix.goarch }})
+        run: GOOS=linux GOARCH=${{ matrix.goarch }} go build ./...
+      - name: build soga binary (linux/${{ matrix.goarch }})
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags "-s -w" -o soga-linux-${{ matrix.goarch }} ./cmd/soga
+      - run: ls -la soga-linux-${{ matrix.goarch }} && file soga-linux-${{ matrix.goarch }}
       - uses: actions/upload-artifact@v4
         with:
-          name: soga-linux-amd64
-          path: soga
+          name: soga-linux-${{ matrix.goarch }}
+          path: soga-linux-${{ matrix.goarch }}
 
   test:
     runs-on: ubuntu-latest
@@ -32,12 +35,27 @@ jobs:
         with:
           go-version: '1.27'
           check-latest: true
-      - name: enable unprivileged user namespaces + iproute2 (netns integration fixtures)
+      - name: enable unprivileged userns + iproute2 (netns integration fixtures)
         run: |
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
           sudo apt-get update -qq && sudo apt-get install -y -qq iproute2
-          unshare --user --net true && echo "userns OK"
-      - name: go vet
-        run: go vet ./... || true
       - name: go test (linux/amd64, native)
         run: go test ./...
+
+  release:
+    needs: [build, test]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: soga-linux-*
+          merge-multiple: true
+      - run: ls -la soga-linux-*
+      - name: create release with binaries
+        uses: softprops/action-gh-release@v2
+        with:
+          files: soga-linux-*
+          generate_release_notes: true
