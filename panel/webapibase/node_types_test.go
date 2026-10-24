@@ -75,7 +75,7 @@ func TestBaseConfigRTTI(t *testing.T) {
 	}
 	for i, want := range []struct{ name, tag string }{{"F2WCOEc5Eu6", `json:"pull_interval"`}, {"I8kigte", `json:"push_interval"`}} {
 		f := rt.Field(i)
-		if f.Name != want.name || string(f.Tag) != want.tag || f.Offset != uintptr(i*8) || f.Type.String() != "runtime.JlKvxH[int]" || f.Anonymous {
+		if f.Name != want.name || string(f.Tag) != want.tag || f.Offset != uintptr(i*8) || f.Type.String() != "rtx.JlKvxH[int]" || f.Anonymous {
 			t.Fatalf("base field: %#v", f)
 		}
 	}

@@ -4,7 +4,7 @@ import (
 	"context"
 	"net"
 	CA "recovered.local/soga/util/rtx"
-	"recovered.local/soga/net/udppacket"
+	"recovered.local/soga/update"
 	Cert "recovered.local/soga/cert"
 	C "recovered.local/soga/config"
 	Geo "recovered.local/soga/geo"
@@ -55,7 +55,7 @@ func (app *M0mmPxPJsa) so4m0_oRopC() {
 		Log.ROUJ82_bIQ("缺少 node_id")
 	}
 	if C.StartupAutoUpdate() {
-		udppacket.ZAWxLZe5zfNN(app.spsw8VktR9z)
+		update.ZAWxLZe5zfNN(app.spsw8VktR9z)
 	}
 	printTime := C.SIZIzCa() && !C.KvDEtVwdr1rT()
 	CA.Kia4I9wKU(app.spsw8VktR9z, printTime)

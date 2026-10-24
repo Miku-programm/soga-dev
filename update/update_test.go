@@ -1,4 +1,4 @@
-package udppacket
+package update
 
 import (
 	"archive/tar"
@@ -21,10 +21,10 @@ import (
 
 // 仅测试连接到真实共享 HTTP 客户端变量，以拒绝所有非本地请求；生产没有可替换 hooks。
 //
-//go:linkname originalHTTPClient recovered.local/soga/relay.clientAt5029428
+//go:linkname originalHTTPClient recovered.local/soga/net/relay.clientAt5029428
 var originalHTTPClient *http.Client
 
-//go:linkname originalHTTPOnce recovered.local/soga/relay.clientOnceAt50C7B70
+//go:linkname originalHTTPOnce recovered.local/soga/net/relay.clientOnceAt50C7B70
 var originalHTTPOnce sync.Once
 
 type localTransport func(*http.Request) (*http.Response, error)
