@@ -1,0 +1,18 @@
+[Unit]
+Description=soga instance %i
+Documentation=https://github.com/Miku-programm/soga-dev
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/soga/%i/soga.conf
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/usr/local/soga
+ExecStart=/usr/local/soga/soga -c /etc/soga/%i/soga.conf -b /etc/soga/%i/blockList -w /etc/soga/%i/whiteList -d /etc/soga/%i/dns.yml -r /etc/soga/%i/routes.toml
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=1048576
+
+[Install]
+WantedBy=multi-user.target

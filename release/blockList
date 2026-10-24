@@ -1,0 +1,5 @@
+# 审计规则，每行一条，以 # 开头的行为注释
+# 示例:
+# domain:example.com
+# regexp:(.*\.||)(baidu)\.(org|com)
+# port:25

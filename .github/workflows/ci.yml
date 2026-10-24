@@ -22,10 +22,85 @@ jobs:
       - name: build soga binary (linux/${{ matrix.goarch }})
         run: CGO_ENABLED=0 GOOS=linux GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags "-s -w" -o soga-linux-${{ matrix.goarch }} ./cmd/soga
       - run: ls -la soga-linux-${{ matrix.goarch }} && file soga-linux-${{ matrix.goarch }}
+      - name: package soga-linux-${{ matrix.goarch }}.tar.gz
+        run: |
+          mkdir -p pkg/soga
+          cp soga-linux-${{ matrix.goarch }} pkg/soga/soga
+          cp release/soga.sh release/soga.service release/soga@.service release/soga.conf \
+             release/blockList release/whiteList release/dns.yml release/routes.toml pkg/soga/
+          chmod +x pkg/soga/soga pkg/soga/soga.sh
+          tar -C pkg -czf soga-linux-${{ matrix.goarch }}.tar.gz soga
+          tar -tzvf soga-linux-${{ matrix.goarch }}.tar.gz
       - uses: actions/upload-artifact@v4
         with:
           name: soga-linux-${{ matrix.goarch }}
-          path: soga-linux-${{ matrix.goarch }}
+          path: |
+            soga-linux-${{ matrix.goarch }}
+            soga-linux-${{ matrix.goarch }}.tar.gz
+
+  install-test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: soga-linux-amd64
+      - name: shellcheck
+        run: shellcheck install.sh release/soga.sh
+      - name: install with config arguments
+        run: |
+          sudo SOGA_TARBALL="$PWD/soga-linux-amd64.tar.gz" bash install.sh \
+            type=v2board server_type=trojan node_id=7 webapi_url=http://127.0.0.1:1/ webapi_key=test
+          test -x /usr/local/soga/soga
+          test -x /usr/bin/soga
+          for f in soga.conf blockList whiteList dns.yml routes.toml; do test -f /etc/soga/$f; done
+          grep -qx 'type=v2board' /etc/soga/soga.conf
+          grep -qx 'server_type=trojan' /etc/soga/soga.conf
+          grep -qx 'node_id=7' /etc/soga/soga.conf
+          systemctl is-enabled soga
+          soga version
+      - name: management commands
+        run: |
+          set -x
+          sudo soga list
+          sudo soga config | grep -qx 'node_id=7'
+          sudo soga config node_id=8 webapi_key='a|b&c'
+          grep -qx 'node_id=8' /etc/soga/soga.conf
+          grep -qxF 'webapi_key=a|b&c' /etc/soga/soga.conf
+          sudo soga new node2 node_id=2
+          grep -qx 'node_id=2' /etc/soga/node2/soga.conf
+          grep -qx 'log_file_dir=/etc/soga/node2/' /etc/soga/node2/soga.conf
+          for f in blockList whiteList dns.yml routes.toml; do test -f /etc/soga/node2/$f; done
+          sudo soga enable node2
+          systemctl is-enabled soga@node2
+          systemctl cat soga@node2 | grep -q '/etc/soga/node2/soga.conf'
+          sudo soga list | grep -q node2
+          if sudo soga new node2; then echo "duplicate instance accepted"; exit 1; fi
+          sudo soga remove default; test -f /etc/soga/soga.conf
+          sudo soga rename node2 node3
+          test ! -e /etc/soga/node2
+          grep -qx 'log_file_dir=/etc/soga/node3/' /etc/soga/node3/soga.conf
+          systemctl is-enabled soga@node3
+          if systemctl is-enabled soga@node2; then echo "old unit still enabled"; exit 1; fi
+          sudo soga config node3 node_id=4
+          grep -qx 'node_id=4' /etc/soga/node3/soga.conf
+          sudo soga remove node3
+          test ! -e /etc/soga/node3
+          sudo soga start || true
+          sudo soga log | tail -n 20
+          sudo soga stop
+      - name: reinstall keeps existing config
+        run: |
+          sudo SOGA_TARBALL="$PWD/soga-linux-amd64.tar.gz" bash install.sh
+          grep -qx 'node_id=8' /etc/soga/soga.conf
+      - name: uninstall
+        run: |
+          sudo soga uninstall -y --purge
+          test ! -e /usr/local/soga
+          test ! -e /usr/bin/soga
+          test ! -e /etc/soga
+          test ! -e /etc/systemd/system/soga.service
 
   test:
     runs-on: ubuntu-latest
@@ -43,7 +118,7 @@ jobs:
         run: go test ./...
 
   release:
-    needs: [build, test]
+    needs: [build, test, install-test]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
