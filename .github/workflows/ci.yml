@@ -13,16 +13,13 @@ jobs:
         with:
           go-version: '1.27'
           check-latest: true
-      - name: go version
-        run: go version
+      - run: go version
       - name: build all packages
         run: go build ./...
       - name: build soga binary (linux/amd64)
         run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o soga ./cmd/soga
-      - name: binary info
-        run: ls -la soga && file soga
-      - name: upload soga artifact
-        uses: actions/upload-artifact@v4
+      - run: ls -la soga && file soga
+      - uses: actions/upload-artifact@v4
         with:
           name: soga-linux-amd64
           path: soga
@@ -35,8 +32,11 @@ jobs:
         with:
           go-version: '1.27'
           check-latest: true
-      - name: ensure iproute2 (for netns integration fixtures)
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq iproute2
+      - name: enable unprivileged user namespaces + iproute2 (netns integration fixtures)
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+          sudo apt-get update -qq && sudo apt-get install -y -qq iproute2
+          unshare --user --net true && echo "userns OK"
       - name: go vet
         run: go vet ./... || true
       - name: go test (linux/amd64, native)
