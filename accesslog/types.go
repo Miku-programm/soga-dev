@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// RTTI 0x36f6b00，112 字节；字段次序、类型与原样本相同。
+// RTTI 0x36f6b00 原为 112 字节；末尾新增 accessHost（客户端原始请求的目标主机）。
 type cUwNbDJ6opWy struct {
 	pv0C8wVKLJh  time.Time
 	uUbcC0nMK1Z9 string
@@ -22,6 +22,7 @@ type cUwNbDJ6opWy struct {
 	mv3eQCXbV    string
 	vz3eAFzt     string
 	g8o8V93EQtw  int
+	accessHost   string
 }
 
 // RTTI 0x36bbf00，48 字节。miyAwzVp.M3X4IS 对应标准 bufio.Writer。

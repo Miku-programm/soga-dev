@@ -11,7 +11,8 @@ import (
 	"time"
 )
 
-// ajkzPuuQ: 0x186dd40。原样输出八个竖线分隔字段。
+// ajkzPuuQ: 0x186dd40。原为八个竖线分隔字段，在 host 前新增原始访问目标：
+// 时间|协议|node_id|user_id|user_ip|access_host|host|dest_ip|端口
 func (s *cToP4Y8) ajkzPuuQ(b *strings.Builder, r *cUwNbDJ6opWy) {
 	if !s._3tRkKvkg(r.pv0C8wVKLJh) {
 		return
@@ -26,6 +27,8 @@ func (s *cToP4Y8) ajkzPuuQ(b *strings.Builder, r *cUwNbDJ6opWy) {
 	b.WriteString(strconv.FormatInt(r.zBzHxRx4qP0, 10))
 	b.WriteByte('|')
 	b.WriteString(v4V_xxf(r.c7a4q7l7VIYD))
+	b.WriteByte('|')
+	b.WriteString(v4V_xxf(r.accessHost))
 	b.WriteByte('|')
 	b.WriteString(v4V_xxf(r.mv3eQCXbV))
 	b.WriteByte('|')

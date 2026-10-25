@@ -40,7 +40,9 @@ func (b *JWN154qJ4) nEFMCmrMs(ctx context.Context, session *sess.ZzkV7_5l, conn 
 		if host != "" && host != old {
 			dest.SetHost(host)
 			if config.SniffRedirect() {
+				access := dest.AccessHost()
 				dest = relay.NewDomainAddress(host, dest.GetPort())
+				dest.SetAccessHost(access)
 				if err = dest.ResolveHost(b.ffju0Enjo.Load().For(conn.RemoteAddr())); err != nil {
 					logx.TRTbrquD(-4, err)
 					return

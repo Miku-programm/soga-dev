@@ -127,7 +127,9 @@ func (b *JWN154qJ4) nativeUDPsniff(packet sess.AFui66gdB, dest **relay.AHU2MRmjz
 	}
 	(*dest).SetHost(host)
 	if C.SniffRedirect() {
+		access := (*dest).AccessHost()
 		*dest = relay.NewDomainAddress(host, (*dest).GetPort())
+		(*dest).SetAccessHost(access)
 		if err = (*dest).ResolveHost(b.ffju0Enjo.Load().For(packet.Y8YsJ7QnEI3h.LocalAddr())); err != nil {
 			Log.TRTbrquD(-4, err)
 			return

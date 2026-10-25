@@ -22,7 +22,7 @@ func (s *ZzkV7_5l) RReCtt(network string, dest *relay.AHU2MRmjzQu, ip net.IP) {
 	} else if first := dest.GetFirstIp(); first != nil {
 		target = first.String()
 	}
-	accesslog.IPblyWsS(network, s.IcoyFqRBU, s.PayAlbdv6.GetId(), source, dest.GetHost(), dest.GetPort(), target)
+	accesslog.IPblyWsS(network, s.IcoyFqRBU, s.PayAlbdv6.GetId(), source, dest.AccessHost(), dest.GetHost(), dest.GetPort(), target)
 }
 
 // WriteAccessLog 对应0x187f4c0。
@@ -46,5 +46,5 @@ func (s *ZzkV7_5l) WriteAccessLogUDPAddr(address net.Addr) {
 	if s.KeHzUwuXWh0 != nil {
 		source = s.KeHzUwuXWh0.String()
 	}
-	accesslog.IPblyWsS("udp", s.IcoyFqRBU, s.PayAlbdv6.GetId(), source, ip.String(), port, ip.String())
+	accesslog.IPblyWsS("udp", s.IcoyFqRBU, s.PayAlbdv6.GetId(), source, ip.String(), ip.String(), port, ip.String())
 }

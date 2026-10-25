@@ -19,7 +19,7 @@ func TestOriginalAccessLayoutsAndEscaping(t *testing.T) {
 		size    uintptr
 		offsets []uintptr
 	}{
-		{reflect.TypeFor[cUwNbDJ6opWy](), 112, []uintptr{0, 24, 40, 48, 56, 72, 88, 104}},
+		{reflect.TypeFor[cUwNbDJ6opWy](), 128, []uintptr{0, 24, 40, 48, 56, 72, 88, 104, 112}},
 		{reflect.TypeFor[cToP4Y8](), 48, []uintptr{0, 8, 16, 32}},
 		{reflect.TypeFor[aGuDZ8NsNT](), 112, []uintptr{0, 8, 16, 32, 72, 80, 88}},
 	} {
@@ -67,13 +67,13 @@ func TestClickhouseRealHTTPBatchAndDDL(t *testing.T) {
 	defer srv.Close()
 	s := &aGuDZ8NsNT{jVe51FV: &C.ZNxaPWNlDqa{ASvYULtJ7: srv.URL, ZH4VO_H4JZ: "db", IJFBj1lIX: "logs", H0x74Y: "alice", SNWlSe: "secret", BaLySDum3K: 2, EVFQh90cvJK: true}, yw1h7z1aNajs: srv.Client(), bV1jN0ia: srv.URL + "/?query=insert"}
 	defer s.t_DddcBjF7()
-	r := cUwNbDJ6opWy{time.Unix(123, 999), "tcp", 7, 42, "1.2.3.4", "a\"b", "::1", 443}
+	r := cUwNbDJ6opWy{time.Unix(123, 999), "tcp", 7, 42, "1.2.3.4", "a\"b", "::1", 443, "31.13.92.37"}
 	var b strings.Builder
 	s.ajkzPuuQ(&b, &r)
 	if s.peQJTFa != 1 || len(bodies) != 0 {
 		t.Fatal("premature flush")
 	}
-	row := "{\"time\":123,\"network\":\"tcp\",\"node_id\":7,\"user_id\":42,\"user_ip\":\"1.2.3.4\",\"host\":\"a\\\"b\",\"dest_ip\":\"::1\",\"dest_port\":443}\n"
+	row := "{\"time\":123,\"network\":\"tcp\",\"node_id\":7,\"user_id\":42,\"user_ip\":\"1.2.3.4\",\"access_host\":\"31.13.92.37\",\"host\":\"a\\\"b\",\"dest_ip\":\"::1\",\"dest_port\":443}\n"
 	if s.egrmDIRRx5.String() != row {
 		t.Fatalf("row %q", s.egrmDIRRx5.String())
 	}
@@ -81,12 +81,12 @@ func TestClickhouseRealHTTPBatchAndDDL(t *testing.T) {
 	if !s.q3mZAt || s.peQJTFa != 0 || s.egrmDIRRx5.Len() != 0 {
 		t.Fatal("flush state")
 	}
-	if len(bodies) != 3 || bodies[0] != "CREATE DATABASE IF NOT EXISTS `db`" || bodies[1] != s.fJMhCf() || bodies[2] != row+row || requests[2] != "/?query=insert" {
+	if len(bodies) != 4 || bodies[0] != "CREATE DATABASE IF NOT EXISTS `db`" || bodies[1] != s.fJMhCf() || bodies[2] != "ALTER TABLE `db`.`logs` ADD COLUMN IF NOT EXISTS access_host String DEFAULT '' AFTER user_ip" || bodies[3] != row+row || requests[3] != "/?query=insert" {
 		t.Fatalf("requests: %q %q", bodies, requests)
 	}
 	s.ajkzPuuQ(&b, &r)
 	s.eyAgzSwv7d()
-	if len(bodies) != 4 {
+	if len(bodies) != 5 {
 		t.Fatal("DDL repeated after success")
 	}
 }

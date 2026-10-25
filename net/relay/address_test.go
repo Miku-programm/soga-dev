@@ -78,11 +78,12 @@ func TestAddressOriginalSemantics(t *testing.T) {
 	if _, err = RNFJeaRY(nil); err == nil || err.Error() != "unknown addr: <nil>" {
 		t.Fatal(err)
 	}
+	// 原样本 56 字节；末尾新增 accessHost（访问日志记录原始目标），原字段偏移不变。
 	typ := reflect.TypeOf(AHU2MRmjzQu{})
-	if typ.Size() != 56 {
+	if typ.Size() != 72 {
 		t.Fatal(typ.Size())
 	}
-	for name, offset := range map[string]uintptr{"dlcy_1": 0, "oKcMaQDwbH": 16, "pDnAz_": 40, "r_VdNaPA": 48} {
+	for name, offset := range map[string]uintptr{"dlcy_1": 0, "oKcMaQDwbH": 16, "pDnAz_": 40, "r_VdNaPA": 48, "accessHost": 56} {
 		field, _ := typ.FieldByName(name)
 		if field.Offset != offset {
 			t.Fatal(name, field.Offset)

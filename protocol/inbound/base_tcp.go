@@ -42,7 +42,9 @@ func (b *JWN154qJ4) lbGar_(ctx context.Context, session *sess.ZzkV7_5l, conn ses
 		if host != "" && host != previousHost {
 			dest.SetHost(host)
 			if config.SniffRedirect() {
+				access := dest.AccessHost()
 				dest = relay.NewDomainAddress(host, dest.GetPort())
+				dest.SetAccessHost(access)
 				if err = dest.ResolveHost(b.ffju0Enjo.Load().For(conn.RemoteAddr())); err != nil {
 					logx.TRTbrquD(-4, err)
 					return

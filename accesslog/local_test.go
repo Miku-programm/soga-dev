@@ -32,7 +32,7 @@ func TestLocalWriterHourlyRotationAndDisabledDirectory(t *testing.T) {
 	loadAccessFixture(t, dir, false, "")
 	s := &cToP4Y8{}
 	defer s.t_DddcBjF7()
-	r := cUwNbDJ6opWy{time.Date(2026, 10, 23, 22, 59, 59, 0, time.UTC), "tcp", 7, 42, "a|b\nc", "x\r\ny", "::1", 443}
+	r := cUwNbDJ6opWy{time.Date(2026, 10, 23, 22, 59, 59, 0, time.UTC), "tcp", 7, 42, "a|b\nc", "x\r\ny", "::1", 443, "1.2|3"}
 	var b strings.Builder
 	s.ajkzPuuQ(&b, &r)
 	first := s.uzBEsO7m
@@ -46,7 +46,7 @@ func TestLocalWriterHourlyRotationAndDisabledDirectory(t *testing.T) {
 	}
 	s.eyAgzSwv7d()
 	data, err = os.ReadFile(path)
-	if err != nil || string(data) != "2026-10-23 22:59:59|tcp|7|42|a_bc|xy|::1|443\n" {
+	if err != nil || string(data) != "2026-10-23 22:59:59|tcp|7|42|a_bc|1.2_3|xy|::1|443\n" {
 		t.Fatalf("line: %q %v", data, err)
 	}
 	s.ajkzPuuQ(&b, &r)
@@ -82,19 +82,19 @@ func TestOriginalQueueDropAndConfigurationGate(t *testing.T) {
 	defer func() { queueAt5096948 = oldQueue; onceAt50C7D00 = sync.Once{}; droppedAt50C79D8.Store(0) }()
 	onceAt50C7D00.Do(func() {})
 	before := time.Now()
-	IPblyWsS("udp", 12, 34, "source", "host", 53, "destination")
+	IPblyWsS("udp", 12, 34, "source", "access", "host", 53, "destination")
 	r := <-queueAt5096948
-	if r.uUbcC0nMK1Z9 != "udp" || r.iJYI5hR != 12 || r.zBzHxRx4qP0 != 34 || r.c7a4q7l7VIYD != "source" || r.mv3eQCXbV != "host" || r.vz3eAFzt != "destination" || r.g8o8V93EQtw != 53 || r.pv0C8wVKLJh.Before(before) {
+	if r.uUbcC0nMK1Z9 != "udp" || r.iJYI5hR != 12 || r.zBzHxRx4qP0 != 34 || r.c7a4q7l7VIYD != "source" || r.accessHost != "access" || r.mv3eQCXbV != "host" || r.vz3eAFzt != "destination" || r.g8o8V93EQtw != 53 || r.pv0C8wVKLJh.Before(before) {
 		t.Fatalf("ABI fields: %+v", r)
 	}
 	for i := 0; i < 8193; i++ {
-		IPblyWsS("tcp", 1, 2, "a", "b", 3, "c")
+		IPblyWsS("tcp", 1, 2, "a", "a", "b", 3, "c")
 	}
 	if len(queueAt5096948) != 8192 || droppedAt50C79D8.Load() != 1 {
 		t.Fatal("nonblocking overflow")
 	}
 	loadAccessFixture(t, "false", false, "")
-	IPblyWsS("tcp", 1, 2, "a", "b", 3, "c")
+	IPblyWsS("tcp", 1, 2, "a", "a", "b", 3, "c")
 	if droppedAt50C79D8.Load() != 1 {
 		t.Fatal("disabled entry reached queue")
 	}

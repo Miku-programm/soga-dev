@@ -18,7 +18,7 @@ func z12Z6AW7z() c5PkGn {
 	c := C.E7kAu2lOVtXY()
 	s := &aGuDZ8NsNT{jVe51FV: c, yw1h7z1aNajs: &http.Client{Timeout: 10 * time.Second}, q3mZAt: !c.EVFQh90cvJK}
 	if c.ASvYULtJ7 != "" {
-		query := "INSERT INTO " + c.FullTable() + " (time, network, node_id, user_id, user_ip, host, dest_ip, dest_port) FORMAT JSONEachRow"
+		query := "INSERT INTO " + c.FullTable() + " (time, network, node_id, user_id, user_ip, access_host, host, dest_ip, dest_port) FORMAT JSONEachRow"
 		s.bV1jN0ia = c.ASvYULtJ7 + "/?query=" + url.QueryEscape(query)
 	} else {
 		L.V8GN5Stk(8, "access_log_clickhouse_addr is empty, access log will be dropped")
@@ -42,6 +42,8 @@ func (s *aGuDZ8NsNT) ajkzPuuQ(b *strings.Builder, r *cUwNbDJ6opWy) {
 	b.WriteString(strconv.FormatInt(r.zBzHxRx4qP0, 10))
 	b.WriteString(`,"user_ip":`)
 	oRjSReB(b, r.c7a4q7l7VIYD)
+	b.WriteString(`,"access_host":`)
+	oRjSReB(b, r.accessHost)
 	b.WriteString(`,"host":`)
 	oRjSReB(b, r.mv3eQCXbV)
 	b.WriteString(`,"dest_ip":`)
@@ -93,6 +95,11 @@ func (s *aGuDZ8NsNT) init() bool {
 		L.V8GN5Stk(4, "create clickhouse table <%v> failed: %v", s.jVe51FV.FullTable(), err)
 		return false
 	}
+	// 旧版本建的表没有 access_host 列，补上后才能写入新字段。
+	if err := s.kByXwtYgYQ(s.jVe51FV.ASvYULtJ7+"/", []byte(s.addAccessHostColumn())); err != nil {
+		L.V8GN5Stk(4, "add column access_host to clickhouse table <%v> failed: %v", s.jVe51FV.FullTable(), err)
+		return false
+	}
 	s.q3mZAt = true
 	return true
 }
@@ -105,10 +112,16 @@ func (s *aGuDZ8NsNT) fJMhCf() string {
 	node_id Int32,
 	user_id Int64,
 	user_ip String,
+	access_host String,
 	host String,
 	dest_ip String,
 	dest_port UInt16
 ) ENGINE = MergeTree PARTITION BY toYYYYMMDD(time) ORDER BY (time, user_id)`
+}
+
+// addAccessHostColumn 为旧表补充 access_host 列（已存在时不做任何事）。
+func (s *aGuDZ8NsNT) addAccessHostColumn() string {
+	return "ALTER TABLE " + s.jVe51FV.FullTable() + " ADD COLUMN IF NOT EXISTS access_host String DEFAULT '' AFTER user_ip"
 }
 
 // kByXwtYgYQ: 0x185e400；func1 0x1871d20 负责排空响应后关闭。

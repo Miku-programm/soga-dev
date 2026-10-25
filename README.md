@@ -75,6 +75,18 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o sog
 
 推送 `v*` tag 后，GitHub Actions 会构建 `soga-linux-{amd64,arm64}.tar.gz` 并发布到 Release，一键安装脚本从这里下载。
 
+## 访问日志
+
+`access_log_enable=true` 时每个连接记录一条，`access_host` 是客户端原始请求的目标（sniff 改写前），`host` 是 sniff 识别出的域名：
+
+```
+时间|协议|node_id|user_id|user_ip|access_host|host|dest_ip|端口
+2026-08-22 09:51:44|tcp|12|1001|1.2.3.4|31.13.92.37|www.facebook.com|31.13.92.37|443
+2026-08-22 09:52:10|tcp|12|1002|5.6.7.8|www.facebook.com|www.facebook.com|31.13.92.37|443
+```
+
+第一条 `access_host` 是 IP、`host` 是域名，即直连 IP 并伪装 SNI；第二条是正常按域名访问。ClickHouse 模式对应新增 `access_host` 列，开启 `access_log_clickhouse_auto_create` 时会自动给旧表补上该列。
+
 ## 注意
 
 配置项 `auto_update=true` 时，程序每 24 小时检查一次本仓库的最新 Release，发布超过 72 小时的新版本会自动下载、覆盖 `/usr/local/soga/` 并执行 `soga restart`。

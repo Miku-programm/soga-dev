@@ -13,6 +13,9 @@ type AHU2MRmjzQu struct {
 	oKcMaQDwbH []net.IP
 	pDnAz_     int
 	r_VdNaPA   bool
+	// 新增：客户端原始请求的目标主机（sniff 用 SetHost 覆盖前的值），供访问日志区分
+	// 「直连 IP + 伪装 SNI」与正常按域名访问。未被覆盖时为空，AccessHost 返回当前主机。
+	accessHost string
 }
 
 // RNFJeaRY @ 0x159de00。原函数仅接受 TCPAddr/UDPAddr，保留底层 IP 切片。
@@ -57,10 +60,28 @@ func (a *AHU2MRmjzQu) GetFirstIp() net.IP {
 func (a *AHU2MRmjzQu) GetIPs() []net.IP { return a.oKcMaQDwbH } // 0x159e440
 func (a *AHU2MRmjzQu) GetHost() string  { return a.dlcy_1 }     // 0x159e460
 // SetHost @ 0x159e480 不清除已解析 IP；只设置主机和 literal 标记。
-func (a *AHU2MRmjzQu) SetHost(host string) { a.dlcy_1 = host; a.r_VdNaPA = false }
-func (a *AHU2MRmjzQu) GetPort() int        { return a.pDnAz_ }                                           // 0x159e4e0
-func (a *AHU2MRmjzQu) Join() string        { return net.JoinHostPort(a.dlcy_1, strconv.Itoa(a.pDnAz_)) } // 0x159e500
-func (a *AHU2MRmjzQu) HostPort() string    { return net.JoinHostPort(a.dlcy_1, strconv.Itoa(a.pDnAz_)) } // 0x159ed20
+func (a *AHU2MRmjzQu) SetHost(host string) {
+	if a.accessHost == "" {
+		a.accessHost = a.dlcy_1
+	}
+	a.dlcy_1 = host
+	a.r_VdNaPA = false
+}
+
+// AccessHost 返回客户端原始请求的目标主机：被 sniff 覆盖过时为覆盖前的值，否则为当前主机。
+func (a *AHU2MRmjzQu) AccessHost() string {
+	if a.accessHost != "" {
+		return a.accessHost
+	}
+	return a.dlcy_1
+}
+
+// SetAccessHost 用于 sniff_redirect 新建地址后保留原始目标。
+func (a *AHU2MRmjzQu) SetAccessHost(host string) { a.accessHost = host }
+
+func (a *AHU2MRmjzQu) GetPort() int     { return a.pDnAz_ }                                           // 0x159e4e0
+func (a *AHU2MRmjzQu) Join() string     { return net.JoinHostPort(a.dlcy_1, strconv.Itoa(a.pDnAz_)) } // 0x159e500
+func (a *AHU2MRmjzQu) HostPort() string { return net.JoinHostPort(a.dlcy_1, strconv.Itoa(a.pDnAz_)) } // 0x159ed20
 
 // ToTCPAddrs @ 0x159e600。
 func (a *AHU2MRmjzQu) ToTCPAddrs() ([]*net.TCPAddr, error) {
