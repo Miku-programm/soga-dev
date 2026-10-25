@@ -14,7 +14,7 @@
 
 set -o pipefail
 
-SCRIPT_VERSION="0.0.6"
+SCRIPT_VERSION="0.0.7"
 
 SOGA_REPO="${SOGA_REPO:-Miku-programm/soga-dev}"
 SOGA_BRANCH="${SOGA_BRANCH:-main}"
@@ -1837,6 +1837,7 @@ instance_menu() {
 
 # ----- 主菜单 -----
 
+# 菜单「安装/更新 soga」与切换分支后的更新：与 soga update 一样，装完后重启运行中的实例
 mm_install_with() {
     local root_missing=0
     [[ -e "$CONF_ROOT" ]] || root_missing=1
@@ -1844,7 +1845,9 @@ mm_install_with() {
     if ((root_missing)); then
         instance_create default || return 1
     fi
-    store_save
+    store_save || return 1
+    restart_running
+    return 0
 }
 
 mm_install() {
