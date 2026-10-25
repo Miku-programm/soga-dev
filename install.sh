@@ -6,18 +6,22 @@
 #   bash <(curl -Ls https://raw.githubusercontent.com/Miku-programm/soga-dev/main/install.sh) 2.17.0
 #   bash <(curl -Ls https://raw.githubusercontent.com/Miku-programm/soga-dev/main/install.sh) type=v2board server_type=v2ray node_id=1 webapi_url=https://xxx.com webapi_key=xxx
 #
+# 先安装管理脚本 /usr/bin/soga，再由 soga update 安装 soga 程序与 systemd 服务。
+#
 # 环境变量:
 #   SOGA_REPO     下载 release 的 GitHub 仓库，默认 Miku-programm/soga-dev
+#   SOGA_BRANCH   管理脚本所在分支，默认 main
 #   SOGA_TARBALL  使用本地 soga-linux-<arch>.tar.gz 安装，跳过下载
 
 set -uo pipefail
 
 SOGA_REPO="${SOGA_REPO:-Miku-programm/soga-dev}"
+SOGA_BRANCH="${SOGA_BRANCH:-main}"
 SOGA_TARBALL="${SOGA_TARBALL:-}"
+export SOGA_REPO SOGA_BRANCH SOGA_TARBALL
 
-INSTALL_DIR="/usr/local/soga"
 CONF_DIR="/etc/soga"
-SYSTEMD_DIR="/etc/systemd/system"
+CMD_PATH="/usr/bin/soga"
 
 red='\033[0;31m'
 green='\033[0;32m'
@@ -30,14 +34,6 @@ die() { echo -e "${red}错误：${plain}$*" >&2; exit 1; }
 
 [[ $EUID -ne 0 ]] && die "必须使用 root 用户运行此脚本"
 command -v systemctl >/dev/null 2>&1 || die "systemctl 命令不存在，请使用较新版本的系统，例如 Ubuntu 18+、Debian 9+、CentOS 7+"
-
-detect_arch() {
-    case "$(uname -m)" in
-        x86_64 | x64 | amd64) echo "amd64" ;;
-        aarch64 | arm64) echo "arm64" ;;
-        *) die "不支持的架构: $(uname -m)，仅支持 amd64 与 arm64" ;;
-    esac
-}
 
 install_base() {
     local missing=()
@@ -52,104 +48,24 @@ install_base() {
         dnf install -y "${missing[@]}"
     elif command -v yum >/dev/null 2>&1; then
         yum install -y "${missing[@]}"
-    elif command -v apk >/dev/null 2>&1; then
-        apk add --no-cache "${missing[@]}"
     else
         die "无法自动安装 ${missing[*]}，请手动安装后重试"
     fi
 }
 
-# 0: running, 1: not running, 2: not installed
-check_status() {
-    [[ -f ${SYSTEMD_DIR}/soga.service ]] || return 2
-    systemctl is-active --quiet soga && return 0
-    return 1
-}
-
-download_tarball() {
-    local version="$1" arch="$2" dest="$3" url
-    if [[ -n "$SOGA_TARBALL" ]]; then
-        info "使用本地安装包: ${SOGA_TARBALL}"
-        cp -f "$SOGA_TARBALL" "$dest" || die "复制本地安装包失败"
-        return
-    fi
-    if [[ -z "$version" ]]; then
-        url="https://github.com/${SOGA_REPO}/releases/latest/download/soga-linux-${arch}.tar.gz"
-        info "开始安装 soga 最新版"
+# 安装管理脚本：本地安装包中自带 soga.sh 时优先使用，否则从仓库下载
+install_manager() {
+    local tmp
+    tmp="$(mktemp -d)"
+    if [[ -n "$SOGA_TARBALL" ]] && tar --no-same-owner -xzf "$SOGA_TARBALL" -C "$tmp" soga/soga.sh 2>/dev/null; then
+        install -m 0755 "$tmp/soga/soga.sh" "$CMD_PATH" || die "安装管理脚本失败"
     else
-        url="https://github.com/${SOGA_REPO}/releases/download/v${version}/soga-linux-${arch}.tar.gz"
-        info "开始安装 soga v${version}"
+        curl -fsSL --retry 3 -o "$tmp/soga.sh" "https://raw.githubusercontent.com/${SOGA_REPO}/${SOGA_BRANCH}/release/soga.sh" \
+            || die "下载 soga 管理脚本失败，请确保你的服务器能够下载 Github 的文件"
+        bash -n "$tmp/soga.sh" || die "下载的管理脚本无效"
+        install -m 0755 "$tmp/soga.sh" "$CMD_PATH" || die "安装管理脚本失败"
     fi
-    curl -fL --retry 3 -o "$dest" "$url" \
-        || die "下载 soga 失败: ${url}\n请确认该版本存在，且服务器能够访问 GitHub"
-}
-
-install_soga() {
-    local version="${1#v}" arch tmp
-    arch="$(detect_arch)"
-    echo "架构: ${arch}"
-
-    TMP_DIR="$(mktemp -d)"
-    trap 'rm -rf "$TMP_DIR"' EXIT
-    tmp="$TMP_DIR"
-    download_tarball "$version" "$arch" "$tmp/soga.tar.gz"
-    # --no-same-owner: 以 root 身份解压时忽略包内记录的 uid/gid，文件归 root 所有，
-    # 避免打包者 uid 不同（或受限命名空间内）导致 chown 失败。
-    tar --no-same-owner -xzf "$tmp/soga.tar.gz" -C "$tmp" || die "解压安装包失败"
-    [[ -x "$tmp/soga/soga" ]] || die "安装包内缺少 soga/soga"
-
-    # 二进制与附带文件整体替换；/etc/soga 下的配置不受影响
-    rm -rf "$INSTALL_DIR"
-    mv "$tmp/soga" "$INSTALL_DIR"
-    chmod +x "$INSTALL_DIR/soga"
-
-    mkdir -p "$CONF_DIR"
-    local fresh=0
-    if [[ ! -f "$CONF_DIR/soga.conf" ]]; then
-        cp "$INSTALL_DIR/soga.conf" "$CONF_DIR/"
-        fresh=1
-    fi
-    for f in blockList whiteList dns.yml routes.toml; do
-        [[ -f "$CONF_DIR/$f" ]] || cp "$INSTALL_DIR/$f" "$CONF_DIR/"
-    done
-
-    cp -f "$INSTALL_DIR/soga.service" "$INSTALL_DIR/soga@.service" "$SYSTEMD_DIR/"
-    install -m 0755 "$INSTALL_DIR/soga.sh" /usr/bin/soga
-    systemctl daemon-reload
-    systemctl enable soga >/dev/null 2>&1
-
-    info "soga v$("$INSTALL_DIR/soga" -v) 安装完成，已设置开机自启"
-    FRESH_INSTALL=$fresh
-}
-
-apply_configs() {
-    local conf_file="$CONF_DIR/soga.conf" kv key value esc
-    for kv in "$@"; do
-        key="${kv%%=*}"
-        value="${kv#*=}"
-        if [[ -z "$key" || "$key" == "$kv" || ! "$key" =~ ^[A-Za-z0-9_]+$ ]]; then
-            warn "忽略无效配置参数: ${kv}"
-            continue
-        fi
-        esc="$(printf '%s' "$value" | sed -e 's/[\\|&]/\\&/g')"
-        if grep -Eq "^[[:space:]]*${key}[[:space:]]*=" "$conf_file"; then
-            sed -i -E "s|^[[:space:]]*${key}[[:space:]]*=.*|${key}=${esc}|" "$conf_file"
-            info "已更新配置: ${key}=${value}"
-        else
-            echo "${key}=${value}" >> "$conf_file"
-            info "已添加配置: ${key}=${value}"
-        fi
-    done
-}
-
-restart_and_report() {
-    systemctl restart soga
-    sleep 2
-    if check_status; then
-        info "soga 启动成功"
-    else
-        warn "soga 可能启动失败，请使用 soga log 查看日志"
-    fi
+    rm -rf "$tmp"
 }
 
 show_usage() {
@@ -180,7 +96,7 @@ EOF
 }
 
 main() {
-    local version="" configs=() arg
+    local version="" configs=() arg fresh=0
     for arg in "$@"; do
         if [[ "$arg" == *=* ]]; then
             configs+=("$arg")
@@ -189,20 +105,41 @@ main() {
         fi
     done
 
-    FRESH_INSTALL=0
     install_base
-    install_soga "$version"
+    install_manager
+
+    # soga update 只在 /etc/soga 不存在时创建 default 实例，残留的空目录先清掉
+    if [[ ! -f "$CONF_DIR/soga.conf" ]]; then
+        fresh=1
+        rmdir "$CONF_DIR" 2>/dev/null
+    fi
+
+    if [[ -n "$version" ]]; then
+        "$CMD_PATH" update "$version" || exit 1
+    else
+        "$CMD_PATH" update || exit 1
+    fi
+    [[ -f "$CONF_DIR/soga.conf" ]] || die "${CONF_DIR} 已存在但缺少 soga.conf，请检查后重试"
 
     if [[ ${#configs[@]} -gt 0 ]]; then
         info "开始写入配置"
-        apply_configs "${configs[@]}"
+        "$CMD_PATH" config "${configs[@]}" || exit 1
     fi
 
-    if [[ $FRESH_INSTALL -eq 1 && ${#configs[@]} -eq 0 ]]; then
+    systemctl enable soga >/dev/null 2>&1
+    info "soga $("$CMD_PATH" version | sed -n 's/^soga 程序: //p') 安装完成，已设置开机自启"
+
+    if [[ $fresh -eq 1 && ${#configs[@]} -eq 0 ]]; then
         echo
-        warn "全新安装，请先配置 ${CONF_DIR}/soga.conf，然后执行 soga start"
+        warn "全新安装，请先配置 ${CONF_DIR}/soga.conf（或执行 soga 进入菜单使用「快速配置」），然后执行 soga start"
     else
-        restart_and_report
+        systemctl restart soga
+        sleep 2
+        if systemctl is-active --quiet soga; then
+            info "soga 启动成功"
+        else
+            warn "soga 可能启动失败，请使用 soga log 查看日志"
+        fi
     fi
     show_usage
 }

@@ -19,11 +19,14 @@ bash <(curl -Ls https://raw.githubusercontent.com/Miku-programm/soga-dev/main/in
 
 | 路径 | 说明 |
 | --- | --- |
-| `/usr/local/soga/` | soga 程序 |
+| `/usr/local/soga/soga` | soga 程序 |
 | `/etc/soga/soga.conf` | default 实例配置，重装时保留 |
 | `/etc/soga/{blockList,whiteList,dns.yml,routes.toml}` | 规则文件，重装时保留 |
 | `/etc/systemd/system/soga.service`、`soga@.service` | systemd 服务 |
-| `/usr/bin/soga` | 管理脚本 |
+| `/usr/bin/soga` | 管理脚本（行为与官方 soga-cmd v0.0.6 一致） |
+| `~/.soga/config.json` | 实例清单、安装分支与更新检查缓存 |
+
+安装时会像官方脚本一样补齐基础依赖（wget、curl、tar、socat、cron）并安装 acme.sh。
 
 ## 管理命令
 
@@ -48,12 +51,14 @@ soga self-update                  - 更新管理脚本
 soga version                      - 查看版本
 ```
 
+直接执行 `soga` 进入交互菜单：安装/更新、完全卸载、切换安装分支（稳定版/开发版）、更新管理脚本、新增实例（带快速配置向导），以及每个实例的启动/停止/重启/重载、状态与日志、开机自启、快速配置和编辑配置文件。菜单提示处也可以直接输入实例名进入该实例的管理菜单。
+
 ### 多实例
 
 - 内置 `default` 实例：`/etc/soga/soga.conf`，服务名 `soga`，不可移除
-- 自定义实例 `<name>`：`/etc/soga/<name>/soga.conf`，服务名 `soga@<name>`
+- 自定义实例 `<name>`：`/etc/soga/<name>/soga.conf`，服务名 `soga@<name>`，实例名只能由字母和数字组成
 
-`soga new` 以 default 实例的配置和规则文件为模板，并把 `log_file_dir`、`ip_user_cache_save_dir`、`access_log_dir` 指向实例自己的目录，再叠加命令行传入的 `k=v`。
+`soga new` 以 default 实例的配置为模板，把 `log_file_dir`、`ip_user_cache_save_dir` 指向实例自己的目录，再叠加命令行传入的 `k=v`；规则文件在实例目录下新建为空文件。
 
 ```bash
 soga new node2 node_id=2

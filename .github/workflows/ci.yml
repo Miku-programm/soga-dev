@@ -50,6 +50,7 @@ jobs:
         run: shellcheck install.sh release/soga.sh
       - name: install with config arguments
         run: |
+          sudo apt-get update -qq
           sudo SOGA_TARBALL="$PWD/soga-linux-amd64.tar.gz" bash install.sh \
             type=v2board server_type=trojan node_id=7 webapi_url=http://127.0.0.1:1/ webapi_key=test
           test -x /usr/local/soga/soga
@@ -59,7 +60,10 @@ jobs:
           grep -qx 'server_type=trojan' /etc/soga/soga.conf
           grep -qx 'node_id=7' /etc/soga/soga.conf
           systemctl is-enabled soga
-          soga version
+          test -f /etc/systemd/system/soga@.service
+          sudo soga version
+          printf '0
+' | sudo soga
       - name: management commands
         run: |
           set -x
@@ -77,7 +81,9 @@ jobs:
           systemctl show -p ExecStart soga@node2 | grep -q '/etc/soga/node2/soga.conf'
           sudo soga list | grep -q node2
           if sudo soga new node2; then echo "duplicate instance accepted"; exit 1; fi
-          sudo soga remove default; test -f /etc/soga/soga.conf
+          if sudo soga remove default; then echo "default removed"; exit 1; fi
+          test -f /etc/soga/soga.conf
+          grep -q '"name": "node2"' /root/.soga/config.json
           sudo soga rename node2 node3
           test ! -e /etc/soga/node2
           grep -qx 'log_file_dir=/etc/soga/node3/' /etc/soga/node3/soga.conf
@@ -96,9 +102,8 @@ jobs:
           grep -qx 'node_id=8' /etc/soga/soga.conf
       - name: uninstall
         run: |
-          sudo soga uninstall -y --purge
+          echo y | sudo soga uninstall
           test ! -e /usr/local/soga
-          test ! -e /usr/bin/soga
           test ! -e /etc/soga
           test ! -e /etc/systemd/system/soga.service
 
