@@ -1,6 +1,6 @@
 # soga-dev
 
-soga 节点后端（v2.17.0）的源码，支持 linux/amd64 与 linux/arm64。
+soga 节点后端（v2.17.1）的源码，支持 linux/amd64 与 linux/arm64。
 
 ## 一键安装
 
