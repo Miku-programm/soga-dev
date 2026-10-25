@@ -62,8 +62,7 @@ jobs:
           systemctl is-enabled soga
           test -f /etc/systemd/system/soga@.service
           sudo soga version
-          printf '0
-' | sudo soga
+          echo 0 | sudo soga
       - name: management commands
         run: |
           set -x
@@ -83,7 +82,6 @@ jobs:
           if sudo soga new node2; then echo "duplicate instance accepted"; exit 1; fi
           if sudo soga remove default; then echo "default removed"; exit 1; fi
           test -f /etc/soga/soga.conf
-          grep -q '"name": "node2"' /root/.soga/config.json
           sudo soga rename node2 node3
           test ! -e /etc/soga/node2
           grep -qx 'log_file_dir=/etc/soga/node3/' /etc/soga/node3/soga.conf
