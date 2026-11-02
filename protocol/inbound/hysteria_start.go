@@ -84,7 +84,7 @@ func (v *Aq5i0Bwez8) Start() (err error) { //0x1d56ba0
 
 func (v *Aq5i0Bwez8) xAm4LgsEB8j(l *Native.P3_qJL5v) { //0x1d57540及0x1e6ce80
 	tunnel, _ := C.TunnelSettings()
-	unsupported := tunnel && !C.Q0SDIN()
+	unsupported := tunnel
 	go func() {
 		defer func() { Log.TRTbrquD(-4, "hysteria listener close:", l.Addr()); l.Close() }()
 		for {

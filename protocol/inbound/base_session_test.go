@@ -86,8 +86,6 @@ func TestCentralSessionOriginalLimitsAndDeferredCleanup(t *testing.T) {
 		{"alive denied", false, true, true, false, 2, []string{"alive:masked:masked"}},
 		{"tcp denied", true, false, true, false, 2, []string{"alive:masked:masked", "tcp", "delalive:masked:masked"}},
 		{"unknown kind balanced", true, true, true, false, 2, []string{"alive:masked:masked", "tcp", "ctx", "record:masked", "deltcp", "delalive:masked:masked"}},
-		{"early gate", true, true, true, true, 0, []string{"alive:masked:masked", "tcp", "deltcp", "delalive:masked:masked"}},
-		{"MUX gate after record", true, true, true, true, 2, []string{"alive:masked:masked", "tcp", "ctx", "record:masked", "deltcp", "delalive:masked:masked"}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			sessionBlockedAt50C6C7D = tc.blocked

@@ -53,17 +53,11 @@ func connLimit(a, b int) int {
 func (p *PqISXuLk) GetUser(index int) *L.Aga91y {
 	out := &L.Aga91y{WZ89pTAOrHK4: p.Jrq3niigv, LmOKwjha: speedLimit(p.Bexa45zkL, C.PanelUserSpeedLimit()), Xmrna8: C.PanelUserConnectionLimit(), B4DYSxuA31za: C.PanelUserTCPLimit()}
 	out.JAfXWwzYrW = &L.JxTGUar{ARARP1z0yA: p.Jm6azqIw}
-	if !firstUsersAt378731B && C.Gh2DnstC() && index >= 88 {
-		out.JAfXWwzYrW = nil
-	}
 	return out
 }
 
 // whmcsnode.(*BoM67db).GetUsers：原样本入口 0x16c9140。
 func (p *BoM67db) GetUsers() L.Sxcf3wu3L {
-	if !firstUsersAt378731B && C.Rs_wP3R() && len(p.GPETCf2) > 88 {
-		p.GPETCf2 = p.GPETCf2[:88]
-	}
 	out := make(L.Sxcf3wu3L, 0)
 	for i, u := range p.GPETCf2 {
 		out = append(out, u.GetUser(i))

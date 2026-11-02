@@ -120,11 +120,11 @@ func TestUserConversionAndOriginalLimits(t *testing.T) {
 		t.Fatal("first-call state")
 	}
 	second := r.ToPanelUsers("v2ray")
-	if len(second) != 88 || len(r.XH32wVY) != 88 {
-		t.Fatal("original slice truncation")
+	if len(second) != 90 || len(r.XH32wVY) != 90 {
+		t.Fatal("user list must not be truncated")
 	}
-	if u.ToPanelUser("v2ray", 87).JAfXWwzYrW == nil || u.ToPanelUser("v2ray", 88).JAfXWwzYrW != nil {
-		t.Fatal("original per-user limit")
+	if u.ToPanelUser("v2ray", 87).JAfXWwzYrW == nil || u.ToPanelUser("v2ray", 88).JAfXWwzYrW == nil {
+		t.Fatal("per-user credentials must be present")
 	}
 }
 func TestURLAndETagCache(t *testing.T) {

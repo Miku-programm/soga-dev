@@ -56,17 +56,11 @@ func connLimit(a, b int) int {
 func (p *CXFPuaTkSm) GetUser(index int) *L.Aga91y {
 	out := &L.Aga91y{WZ89pTAOrHK4: p.QZuKzrg, LmOKwjha: speedLimit(p.T1hUUd2, C.PanelUserSpeedLimit()), Xmrna8: C.PanelUserConnectionLimit(), B4DYSxuA31za: C.PanelUserTCPLimit()}
 	out.JAfXWwzYrW = &L.QcqpSL3i6ri{YrjVl_2g_S: p.SXYRZj, YyAgnMatmj: p.JaWN6wQMY_8k}
-	if !firstUsersAt378731A && C.JatfUF38O() && index >= 88 {
-		out.JAfXWwzYrW = nil
-	}
 	return out
 }
 
 // proxypanelnode.(*JpYAk64U2).GetUsers：原样本入口 0x16c23c0。
 func (p *JpYAk64U2) GetUsers() L.Sxcf3wu3L {
-	if !firstUsersAt378731A && C.Q0SDIN() && len(p.GPETCf2) > 88 {
-		p.GPETCf2 = p.GPETCf2[:88]
-	}
 	out := make(L.Sxcf3wu3L, 0)
 	for i, u := range p.GPETCf2 {
 		out = append(out, u.GetUser(i))

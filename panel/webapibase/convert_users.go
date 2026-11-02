@@ -55,17 +55,11 @@ func (u *WVfKv8zPvt) wfpy4HFAx21(serverType config.Mpn2JltM, index int) *types.A
 		connections = globalConnections
 	}
 	out := &types.Aga91y{WZ89pTAOrHK4: u.IDLJXX6F, LmOKwjha: globalSpeed, Xmrna8: connections, B4DYSxuA31za: config.PanelUserTCPLimit(), JAfXWwzYrW: credential}
-	if stateAt3787339 == 0 && config.Rs_wP3R() && index >= 88 {
-		out.JAfXWwzYrW = nil
-	}
 	return out
 }
 
 // ToPanelUsers 对应 0x1745bc0；保留原切片长度修改和末尾共享字节复位。
 func (r *D9MPLRTuA) ToPanelUsers(serverType config.Mpn2JltM) types.Sxcf3wu3L {
-	if stateAt3787339 == 0 && config.Q0SDIN() && len(r.Ta593Rq2lSa) > 88 {
-		r.Ta593Rq2lSa = r.Ta593Rq2lSa[:88]
-	}
 	out := make(types.Sxcf3wu3L, 0)
 	for i, user := range r.Ta593Rq2lSa {
 		out = append(out, user.wfpy4HFAx21(serverType, i))

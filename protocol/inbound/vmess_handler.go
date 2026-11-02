@@ -21,7 +21,7 @@ func (v *K4avFiYOPi) tFdBaee6T(conn net.Conn) {
 		Log.TRTbrquD(-4, "handle vmess end")
 		v.bj10P7X()
 	}()
-	if enabled, _ := C.TunnelSettings(); enabled && !C.Q0SDIN() {
+	if enabled, _ := C.TunnelSettings(); enabled {
 		if _, err := conn.Read(nil); err != nil {
 			Log.TRTbrquD(-4, "read tunnel err:", err)
 			return

@@ -66,7 +66,7 @@ func (v *Ze0fOaAko) nlJ8YjzjZ(_ context.Context, conn net.Conn, u *U.LJJkaD) {
 func (v *Ze0fOaAko) kOoHOawg4u(ctx context.Context, l net.Listener, u *U.LJJkaD) {
 	go func() {
 		enabled, _ := C.TunnelSettings()
-		tunnel := enabled && !C.Q0SDIN()
+		tunnel := enabled
 		defer l.Close()
 		for {
 			select {

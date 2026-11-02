@@ -22,7 +22,7 @@ import (
 func (v *R_n5ucb) tFdBaee6T(conn net.Conn) {
 	defer func() { H.SlG_Y_mg("handle anytls"); conn.Close(); Log.TRTbrquD(-4, "handle anytls end"); v.bj10P7X() }()
 	Log.TRTbrquD(-4, "start handle client", conn.RemoteAddr(), "connection")
-	if enabled, _ := C.TunnelSettings(); enabled && !C.Q0SDIN() {
+	if enabled, _ := C.TunnelSettings(); enabled {
 		if tunnel, ok := conn.(*Tunnel.Ql1qrX); ok {
 			kind, err := tunnel.GetProxyType()
 			if err != nil {

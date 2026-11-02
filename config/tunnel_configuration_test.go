@@ -33,8 +33,8 @@ func TestOriginalTunnelConfigurationGateAndErrors(t *testing.T) {
 		t.Fatal(v, e)
 	}
 	T15Jifo(true)
-	if v, e := R3DjPWSnt(); v != nil || e != nil {
-		t.Fatal("blocked gate", v, e)
+	if v, e := R3DjPWSnt(); e != nil || v == nil || !v.TunnelRecvProxy() || !v.IsMux() || v.IsProxyMode() {
+		t.Fatal("tunnel must stay enabled regardless of state", v, e)
 	}
 	T15Jifo(false)
 	configAt509E300.GbyJkc = "tls-tunnel"

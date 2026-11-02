@@ -6,7 +6,6 @@ import (
 	"recovered.local/soga/util/genmap"
 	"recovered.local/soga/panel/types"
 	"recovered.local/soga/protocol/vless"
-	"recovered.local/soga/config"
 	"recovered.local/soga/util/logx"
 	"recovered.local/soga/user"
 	"recovered.local/soga/panel/registry"
@@ -44,13 +43,10 @@ func (v *KHonGaqbIy_6) UpdateAPIData(data *registry.D5gTIZ5aVg) bool {
 }
 
 // spcNlUL 对应0x1d97c20及func1@0x1e72a80、func2@0x1e729e0。
-// 保留原两次Q0SDIN检查及88上限，也保留失败条目仍进入seen/计数的行为。
+// 原 Q0SDIN 检查及 88 上限已移除；保留失败条目仍进入seen/计数的行为。
 func (v *KHonGaqbIy_6) spcNlUL(panels types.Sxcf3wu3L) {
 	if panels == nil {
 		panels = types.Sxcf3wu3L{}
-	}
-	if config.Q0SDIN() && len(panels) > 88 {
-		panels = panels[:88]
 	}
 	seen := make(map[int64]*types.Aga91y)
 	for _, panel := range panels {
@@ -97,9 +93,6 @@ func (v *KHonGaqbIy_6) spcNlUL(panels types.Sxcf3wu3L) {
 		}
 		return true
 	})
-	if config.Q0SDIN() && len(panels) > 88 {
-		v.jc_QPN6.Range(func(id int64, user user.PgaNd3014U) bool { user.ResetCtx(); v.jc_QPN6.Delete(id); return true })
-	}
 	userCountAt50C6DA0 = len(panels)
 	logx.V8GN5Stk(0, "current user num: %v", len(panels))
 	v.fUxO7UYAH = len(panels)

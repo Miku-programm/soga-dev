@@ -56,7 +56,7 @@ func (v *Lp07FzBLx9V) z0MUgmyQ(ctx context.Context, conn net.Conn) {
 // accepted connection is discarded without Close; that behavior is retained.
 func (v *Lp07FzBLx9V) xAm4LgsEB8j(listener net.Listener) {
 	enabled, _ := C.TunnelSettings()
-	tunnel := enabled && !C.Q0SDIN()
+	tunnel := enabled
 	go func() {
 		defer listener.Close()
 		for {
@@ -69,9 +69,6 @@ func (v *Lp07FzBLx9V) xAm4LgsEB8j(listener net.Listener) {
 			if err != nil {
 				Log.TRTbrquD(-4, "accept ss tcp err:", err)
 				return
-			}
-			if SessionBlocked() {
-				continue
 			}
 			if tunnel {
 				go v.z0MUgmyQ(v.zb8f3cHWW8v, conn)

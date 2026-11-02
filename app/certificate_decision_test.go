@@ -115,15 +115,9 @@ func TestEncryptedTunnelRetainsOriginalAcceptedNames(t *testing.T) {
 	defer C.MkwNWciPHS(old)
 	for _, mode := range []string{"tls", "tls-tunnel", "quic-tunnel", "ws-tls-tunnel", "tcp-tunnel", "ws-tunnel", "invalid"} {
 		certificateConfig(t, "server_type=ss\ntunnel_enable=true\ntunnel_type="+mode+"\nsoga_key=test-nonempty\n")
-		C.T15Jifo(false)
 		want := mode == "tls-tunnel" || mode == "quic-tunnel" || mode == "ws-tls-tunnel"
 		if got := gcTStJ6_zEzn(); got != want {
 			t.Fatalf("%s: %v", mode, got)
 		}
-		C.T15Jifo(true)
-		if gcTStJ6_zEzn() {
-			t.Fatal("key state no longer gates tunnel branch")
-		}
 	}
-	C.T15Jifo(false)
 }

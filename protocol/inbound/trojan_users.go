@@ -3,7 +3,6 @@ package inbound
 import (
 	"net"
 	L "recovered.local/soga/panel/types"
-	C "recovered.local/soga/config"
 	Log "recovered.local/soga/util/logx"
 	U "recovered.local/soga/user"
 	Q "recovered.local/soga/panel/registry"
@@ -39,9 +38,6 @@ func (v *EfaIFpp) UpdateAPIData(data *Q.D5gTIZ5aVg) bool { // 0x1d8f220
 func (v *EfaIFpp) spcNlUL(panels L.Sxcf3wu3L) {
 	if panels == nil {
 		panels = L.Sxcf3wu3L{}
-	}
-	if C.Q0SDIN() && len(panels) > 88 {
-		panels = panels[:88]
 	}
 	seen := make(map[int64]*L.Aga91y)
 	for _, panel := range panels {
@@ -81,9 +77,6 @@ func (v *EfaIFpp) spcNlUL(panels L.Sxcf3wu3L) {
 		}
 		return true
 	})
-	if C.Q0SDIN() && len(panels) > 88 {
-		v.jc_QPN6.Range(func(id int64, user U.PgaNd3014U) bool { user.ResetCtx(); v.jc_QPN6.Delete(id); return true })
-	}
 	userCountAt50C6DA0 = len(panels)
 	Log.V8GN5Stk(0, "current user num: %v", len(panels))
 	v.fUxO7UYAH = len(panels)

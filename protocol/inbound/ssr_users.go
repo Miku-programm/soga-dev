@@ -3,7 +3,6 @@ package inbound
 import (
 	"fmt"
 	L "recovered.local/soga/panel/types"
-	C "recovered.local/soga/config"
 	Log "recovered.local/soga/util/logx"
 	U "recovered.local/soga/user"
 )
@@ -25,9 +24,6 @@ func (v *Ze0fOaAko) spcNlUL(panels L.Sxcf3wu3L) {
 				Log.V8GN5Stk(8, "update ssr user id %v error: %v", p.WZ89pTAOrHK4, err)
 			}
 		}
-	}
-	if C.Q0SDIN() && len(panels) > 88 {
-		panels = panels[:88]
 	}
 	seen := make(map[int64]*L.Aga91y)
 	for _, p := range panels {
@@ -115,19 +111,6 @@ func (v *Ze0fOaAko) spcNlUL(panels L.Sxcf3wu3L) {
 		Log.TRTbrquD(-4, "remove user:", u)
 		return true
 	})
-	if C.Q0SDIN() && len(panels) > 88 {
-		v.jc_QPN6.Range(func(id int64, base U.PgaNd3014U) bool {
-			u := base.(*U.LJJkaD)
-			u.ResetCtx()
-			v.jc_QPN6.Delete(id)
-			v.jTyGfNkAw.Delete(u.GetUID())
-			v.tpQEL_qKogl.Delete(u.GetUID())
-			if host, err := u.GetSSRHost(); err == nil {
-				v.ktET5DFha.Delete(host)
-			}
-			return true
-		})
-	}
 	userCountAt50C6DA0 = len(panels)
 	Log.V8GN5Stk(0, "current user num: %v", len(panels))
 	v.fUxO7UYAH = len(panels)

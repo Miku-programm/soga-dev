@@ -74,7 +74,7 @@ func TestShadowsocksOriginalRestrictedCeiling(t *testing.T) {
 		panels[i] = ssPanelFixture(int64(i), "password")
 	}
 	v.spcNlUL(panels)
-	if v.fUxO7UYAH != 88 || v.jc_QPN6.Len() != 88 || userCountAt50C6DA0 != 88 {
-		t.Fatal("original limit")
+	if v.fUxO7UYAH != 90 || v.jc_QPN6.Len() != 90 || userCountAt50C6DA0 != 90 {
+		t.Fatal("user limit must be removed")
 	}
 }

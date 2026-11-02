@@ -20,11 +20,11 @@ func TestOriginalUserCountAndCredentialGates(t *testing.T) {
 		t.Fatal("initial bypass state must be consumed")
 	}
 	next := in.GetUsers()
-	if len(next) != 88 || len(in) != 90 {
-		t.Fatal("original range cutoff, not input mutation")
+	if len(next) != 90 || len(in) != 90 {
+		t.Fatal("user list must not be truncated")
 	}
-	if in[88].GetUser(88).JAfXWwzYrW != nil || in[87].GetUser(87).JAfXWwzYrW == nil {
-		t.Fatal("original credential cutoff")
+	if in[88].GetUser(88).JAfXWwzYrW == nil || in[87].GetUser(87).JAfXWwzYrW == nil {
+		t.Fatal("credentials must be present for all users")
 	}
 	if got := (CgPle0Z{}).GetUsers(); got == nil {
 		t.Fatal("original nonnil empty")

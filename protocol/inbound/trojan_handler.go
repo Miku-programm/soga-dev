@@ -14,7 +14,7 @@ import (
 // nlJ8YjzjZ 0x1d90000；原生 Trojan 认证、计量、帧处理和公共策略转发。
 func (v *EfaIFpp) nlJ8YjzjZ(conn net.Conn) {
 	defer func() { H.SlG_Y_mg("handle trojan"); conn.Close(); Log.TRTbrquD(-4, "handle trojan end"); v.bj10P7X() }()
-	if enabled, _ := C.TunnelSettings(); enabled && !C.Q0SDIN() {
+	if enabled, _ := C.TunnelSettings(); enabled {
 		if _, err := conn.Read(nil); err != nil {
 			Log.TRTbrquD(-4, "read tunnel err:", err)
 			return

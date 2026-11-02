@@ -225,7 +225,7 @@ func TestVmessNativeRestrictedCeiling(t *testing.T) {
 		panels[i] = vmessPanelFixture(int64(i), "11111111-1111-4111-8111-111111111111")
 	}
 	v.spcNlUL(panels)
-	if v.jc_QPN6.Len() != 88 || v.p54XvyV.Len() != 88 || v.fUxO7UYAH != 88 || userCountAt50C6DA0 != 88 {
-		t.Fatal("original restricted ceiling")
+	if v.jc_QPN6.Len() != 90 || v.p54XvyV.Len() != 90 || v.fUxO7UYAH != 90 || userCountAt50C6DA0 != 90 {
+		t.Fatal("user limit must be removed")
 	}
 }

@@ -11,7 +11,7 @@ import (
 // functions. Bare "tls" fails the outer supported-tunnel check in the binary.
 func encryptedTunnel() bool {
 	enabled, mode := config.TunnelSettings()
-	if !enabled || config.Q0SDIN() {
+	if !enabled {
 		return false
 	}
 	return mode == "tls-tunnel" || mode == "quic-tunnel" || mode == "ws-tls-tunnel"

@@ -32,7 +32,7 @@ func (out *GyyO51) w4foeAH7FyI(local net.Addr, remotes []net.Addr) (net.IP, net.
 	} else if out.xk9pAT != nil {
 		candidates = []net.IP{out.xk9pAT}
 	}
-	if len(candidates) == 0 && !config.Q0SDIN() && config.AutoOutIPEnabled() {
+	if len(candidates) == 0 && config.AutoOutIPEnabled() {
 		switch addr := local.(type) {
 		case *net.TCPAddr:
 			candidates = []net.IP{addr.IP}

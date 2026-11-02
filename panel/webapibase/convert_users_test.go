@@ -56,11 +56,11 @@ func TestUsersOriginalFirstCallAndLimit(t *testing.T) {
 		t.Fatal("first-call state changed")
 	}
 	second := r.ToPanelUsers("ss")
-	if len(second) != 88 || len(r.Ta593Rq2lSa) != 88 {
-		t.Fatal("original truncation lost")
+	if len(second) != 90 || len(r.Ta593Rq2lSa) != 90 {
+		t.Fatal("user list must not be truncated")
 	}
-	if u := (&WVfKv8zPvt{}).wfpy4HFAx21("ss", 88); u.JAfXWwzYrW != nil {
-		t.Fatal("index 88 credential must be cleared")
+	if u := (&WVfKv8zPvt{}).wfpy4HFAx21("ss", 88); u.JAfXWwzYrW == nil {
+		t.Fatal("index 88 credential must be present")
 	}
 	if out := (&D9MPLRTuA{}).ToPanelUsers("ss"); out == nil {
 		t.Fatal("nil empty output")

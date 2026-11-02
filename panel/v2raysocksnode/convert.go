@@ -55,9 +55,6 @@ func (r *QbI1asEYYq) IsOk() bool                { return r.DCbciSyJ_c == "ok" } 
 var stateAt378733A byte = 1
 
 func (r *QbI1asEYYq) ToPanelUsers(kind C.Mpn2JltM) L.Sxcf3wu3L { //0x174f620
-	if stateAt378733A == 0 && C.Q0SDIN() && len(r.XH32wVY) > 88 {
-		r.XH32wVY = r.XH32wVY[:88]
-	}
 	out := make(L.Sxcf3wu3L, 0, len(r.XH32wVY))
 	for i, u := range r.XH32wVY {
 		out = append(out, u.ToPanelUser(kind, i))
@@ -111,8 +108,5 @@ func (u *WsPqZpEZ) ToPanelUser(kind C.Mpn2JltM, index int) *L.Aga91y { //0x174f7
 		connections = globalConnections
 	}
 	out := &L.Aga91y{WZ89pTAOrHK4: u.Gae2lLMaC4h, LmOKwjha: globalSpeed, Xmrna8: connections, B4DYSxuA31za: C.PanelUserTCPLimit(), JAfXWwzYrW: credential}
-	if stateAt378733A == 0 && C.Rs_wP3R() && index >= 88 {
-		out.JAfXWwzYrW = nil
-	}
 	return out
 }

@@ -18,7 +18,7 @@ import (
 func (v *KHonGaqbIy_6) tFdBaee6T(conn net.Conn) {
 	defer func() { H.SlG_Y_mg("handle vless"); conn.Close(); Log.TRTbrquD(-4, "handle vless end"); v.bj10P7X() }()
 	Log.TRTbrquD(-4, "start handle client", conn.RemoteAddr(), "connection")
-	if enabled, _ := C.TunnelSettings(); enabled && !C.Q0SDIN() {
+	if enabled, _ := C.TunnelSettings(); enabled {
 		if tunnel, ok := conn.(*T.Ql1qrX); ok {
 			typ, err := tunnel.GetProxyType()
 			if err != nil {

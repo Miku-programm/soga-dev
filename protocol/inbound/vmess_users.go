@@ -5,7 +5,6 @@ import (
 	J "recovered.local/soga/net/sess"
 	L "recovered.local/soga/panel/types"
 	N "recovered.local/soga/net/limit"
-	C "recovered.local/soga/config"
 	V "recovered.local/soga/protocol/vmess"
 	Log "recovered.local/soga/util/logx"
 	U "recovered.local/soga/user"
@@ -53,9 +52,6 @@ func (v *K4avFiYOPi) spcNlUL(panels L.Sxcf3wu3L) { // 0x1da2260
 	if panels == nil {
 		panels = L.Sxcf3wu3L{}
 	}
-	if C.Q0SDIN() && len(panels) > 88 {
-		panels = panels[:88]
-	}
 	seen := make(map[int64]*L.Aga91y, len(panels))
 	added := make([]*U.QKaIWV2, 0)
 	for _, panel := range panels {
@@ -100,9 +96,7 @@ func (v *K4avFiYOPi) spcNlUL(panels L.Sxcf3wu3L) { // 0x1da2260
 	if v.l_ZoZQDxG7 != nil {
 		v.l_ZoZQDxG7.RemoveUsers(removed)
 	}
-	if C.Q0SDIN() && len(panels) > 88 {
-		v.jc_QPN6.Range(func(id int64, user U.PgaNd3014U) bool { user.ResetCtx(); v.jc_QPN6.Delete(id); return true }) // 0x1e73d60
-	} else if len(added) > 0 && v.dj_cTnaUp6f != nil {
+	if len(added) > 0 && v.dj_cTnaUp6f != nil {
 		v.dj_cTnaUp6f.GenAuthForNewUsers(added)
 	}
 	userCountAt50C6DA0 = len(panels)

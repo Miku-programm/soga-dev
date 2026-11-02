@@ -74,7 +74,7 @@ func (v *Lp07FzBLx9V) Start() error {
 		}
 		listeners = append(listeners, listener)
 		enabled, _ := C.TunnelSettings()
-		if !enabled || C.Q0SDIN() {
+		if !enabled {
 			raw, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP(host), Port: v.wiy6P3.Load().FnMUny.Am3QoeF})
 			if err != nil {
 				failed = true
