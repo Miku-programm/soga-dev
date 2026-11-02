@@ -47,6 +47,9 @@ type AOa7p4h struct {
 	UH0HXa5O    string  `json:"uuid"`
 	DwdlKBQpcgY float64 `json:"speed_limit"`
 	QeuUtZ8f    int     `json:"device_limit"`
+	// xiaov2b 为 mieru 节点下发的用户名（用户 id）与密码（uuid）。
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 // RTTI 0x36bbd80，原大小 296 字节。
@@ -128,6 +131,14 @@ type BdT6k1HU8L struct {
 	LWnSaWm      jsontext.Value `json:"network_settings"`
 	HnEAiVV      string         `json:"obfs_password"`
 	edYRMY8      bool
+	// mieru 节点字段，来自 xiaov2b MieruSettings::nodeConfig。
+	MieruTrafficPattern string `json:"traffic_pattern"`
+	MieruUserHint       bool   `json:"user_hint_is_mandatory"`
+	MieruPortBindings   []struct {
+		Port      int    `json:"port"`
+		PortRange string `json:"portRange"`
+		Protocol  string `json:"protocol"`
+	} `json:"port_bindings"`
 }
 type OJv5MKs []*AOa7p4h
 type V6rvatiQT []FPZsKqad5Ox

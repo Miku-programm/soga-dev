@@ -29,6 +29,10 @@ func (k xofvu_nD97c) String() string {
 		return "ackClientToServer"
 	case 9:
 		return "ackServerToClient"
+	case 10:
+		return "dataClientToServerLowEntropy"
+	case 11:
+		return "dataServerToClientLowEntropy"
 	default:
 		return fmt.Sprintf("UNKNOWN(%v)", byte(k))
 	}

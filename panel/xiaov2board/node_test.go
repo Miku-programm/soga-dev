@@ -18,7 +18,7 @@ func TestOriginalLayoutsAndJSONFields(t *testing.T) {
 	for _, tc := range []struct {
 		v any
 		n uintptr
-	}{{GJOCQqa{}, 16}, {Xd0IG2Z{}, 16}, {LRlqOaYmO{}, 16}, {IMyQ5CxaikH{}, 40}, {FPZsKqad5Ox{}, 64}, {AOa7p4h{}, 40}, {DUnaqZqqbnWW{}, 296}, {BdT6k1HU8L{}, 616}} {
+	}{{GJOCQqa{}, 16}, {Xd0IG2Z{}, 16}, {LRlqOaYmO{}, 16}, {IMyQ5CxaikH{}, 40}, {FPZsKqad5Ox{}, 64}, {AOa7p4h{}, 72}, {DUnaqZqqbnWW{}, 296}, {BdT6k1HU8L{}, 664}} {
 		if got := reflect.TypeOf(tc.v).Size(); got != tc.n {
 			t.Fatalf("%T size %d want %d", tc.v, got, tc.n)
 		}

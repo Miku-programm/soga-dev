@@ -12,7 +12,7 @@ import (
 )
 
 // 原 init@0x179b920 的 map 0x5096920；混淆字符串限定解码已核准。
-var protocolAt5096920 = map[string]C.Mpn2JltM{"vmess": "v2ray", "vless": "vless", "trojan": "trojan", "anytls": "anytls", "shadowsocks": "ss", "hysteria2": "hysteria"}
+var protocolAt5096920 = map[string]C.Mpn2JltM{"vmess": "v2ray", "vless": "vless", "trojan": "trojan", "anytls": "anytls", "shadowsocks": "ss", "hysteria2": "hysteria", "mieru": "mieru"}
 var certificateErrorsAt509C8C0 sync.Map
 
 // ocVy8aVcKm 对应 0x179c420，先验证协议，再按原顺序修改响应。

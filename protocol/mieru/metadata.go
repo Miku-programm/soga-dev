@@ -22,6 +22,11 @@ type IqB1foHWg struct {
 	B8QsA0N2yo   uint8
 	HPUJVQ0S     uint16
 	FO7MEJ       uint8
+	// 低熵数据帧（协议 10/11）专用字段：byte 1、25-28、29-30、31。
+	LowEntropyMode      uint8
+	LowEntropyMask      uint32
+	ExtractedPayloadLen uint16
+	LowEntropyRotation  uint8
 }
 
 // Marshal is 0x1c3a1a0. Reserved bytes are zero. Unknown enum values still
@@ -36,12 +41,18 @@ func (m *IqB1foHWg) Marshal() (b [32]byte) {
 		b[14] = m.DGMUmJ7
 		binary.BigEndian.PutUint16(b[15:17], m.HPUJVQ0S)
 		b[17] = m.FO7MEJ
-	case 7, 9:
+	case 7, 9, 11:
 		binary.BigEndian.PutUint32(b[14:18], m.N01v7C)
 		binary.BigEndian.PutUint16(b[18:20], m.UlMT6MeaV2)
 		b[20], b[21] = m.VGN7gjQ4p, m.B8QsA0N2yo
 		binary.BigEndian.PutUint16(b[22:24], m.HPUJVQ0S)
 		b[24] = m.FO7MEJ
+	}
+	if m.isLowEntropy() {
+		b[1] = m.LowEntropyMode
+		binary.BigEndian.PutUint32(b[25:29], m.LowEntropyMask)
+		binary.BigEndian.PutUint16(b[29:31], m.ExtractedPayloadLen)
+		b[31] = m.LowEntropyRotation
 	}
 	return
 }
@@ -75,15 +86,27 @@ func decodeMetadataAt(b []byte, now time.Time) (*IqB1foHWg, error) {
 		if m.HPUJVQ0S > 1024 {
 			return nil, fmt.Errorf("session payload size %d exceeds maximum %d", m.HPUJVQ0S, 1024)
 		}
-	case 7, 9:
+	case 7, 9, 11:
 		m.N01v7C = binary.BigEndian.Uint32(b[14:18])
 		m.UlMT6MeaV2 = binary.BigEndian.Uint16(b[18:20])
 		m.VGN7gjQ4p = b[20]
 		m.B8QsA0N2yo = b[21]
 		m.HPUJVQ0S = binary.BigEndian.Uint16(b[22:24])
 		m.FO7MEJ = b[24]
+		if m.isLowEntropy() {
+			m.LowEntropyMode = b[1]
+			m.LowEntropyMask = binary.BigEndian.Uint32(b[25:29])
+			m.ExtractedPayloadLen = binary.BigEndian.Uint16(b[29:31])
+			m.LowEntropyRotation = b[31]
+			if err := validateLowEntropyMetadata(m); err != nil {
+				return nil, err
+			}
+		}
 	default:
 		return nil, fmt.Errorf("unknown protocol type %d", b[0])
 	}
 	return m, nil
 }
+
+// isLowEntropy 对应 mieru isLowEntropyProtocol：dataClientToServerLowEntropy(10) 与 dataServerToClientLowEntropy(11)。
+func (m *IqB1foHWg) isLowEntropy() bool { return m.Rf6N7kY6GVCs == 10 || m.Rf6N7kY6GVCs == 11 }

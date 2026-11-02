@@ -21,7 +21,7 @@ func TestPanelNodeRTTI(t *testing.T) {
 		size   uintptr
 		fields []field
 	}{
-		{reflect.TypeOf(Wr5SVP{}), 960, []field{
+		{reflect.TypeOf(Wr5SVP{}), 984, []field{
 			{"EMlXEc", 0, reflect.TypeFor[int](), ""},
 			{"Z1TIgHOQ", 8, reflect.TypeFor[string](), ""},
 			{"HSA2b5V", 24, reflect.TypeFor[bool](), ""},
@@ -108,10 +108,12 @@ func TestPanelNodeRTTI(t *testing.T) {
 			{"NWbT7wk", 80, reflect.TypeFor[[]string](), ""},
 			{"F9P9aeOu23U", 104, reflect.TypeFor[string](), ""},
 		}},
-		{reflect.TypeOf(Xh4IiOa0{}), 40, []field{
+		{reflect.TypeOf(Xh4IiOa0{}), 64, []field{
 			{"MQE3K4mq", 0, reflect.TypeFor[int](), ""},
 			{"GGSLzD", 8, reflect.TypeFor[string](), ""},
 			{"CLWr9bQsb", 24, reflect.TypeFor[string](), ""},
+			{"PortRange", 40, reflect.TypeFor[string](), ""},  // 新增：mieru 端口范围
+			{"ForceUserHint", 56, reflect.TypeFor[bool](), ""}, // 新增：面板强制 user hint
 		}},
 		{reflect.TypeOf(Aga91y{}), 72, []field{
 			{"WZ89pTAOrHK4", 0, reflect.TypeFor[int64](), ""},
