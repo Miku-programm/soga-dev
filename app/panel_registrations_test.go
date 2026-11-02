@@ -57,6 +57,7 @@ func TestAllOriginalPanelRegistrations(t *testing.T) {
 		{"xboard-vless-webapi", "xboard", "vless", "webapi"},                 // xboardvlesswebapi.init.0 0x179b7a0
 		{"xiaov2board-anytls-webapi", "xiaov2board", "anytls", "webapi"},     // xiaov2boardanytlswebapi.init.0 0x17b0040
 		{"xiaov2board-hysteria-webapi", "xiaov2board", "hysteria", "webapi"}, // xiaov2boardhysteriawebapi.init.0 0x17b0100
+		{"xiaov2board-mieru-webapi", "xiaov2board", "mieru", "webapi"},       // 新增
 		{"xiaov2board-ss-webapi", "xiaov2board", "ss", "webapi"},             // xiaov2boardsswebapi.init.0 0x17b01c0
 		{"xiaov2board-trojan-webapi", "xiaov2board", "trojan", "webapi"},     // xiaov2boardtrojanwebapi.init.0 0x17b0280
 		{"xiaov2board-v2ray-webapi", "xiaov2board", "v2ray", "webapi"},       // xiaov2boardv2raywebapi.init.0 0x17b0400

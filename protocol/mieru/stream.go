@@ -120,7 +120,7 @@ func (v *xjTVP8) e91JivRNgi(b []byte) (int, error) { //0x1c38920
 	for len(b) > 0 {
 		seq := v.qYZ2Uu.Add(1) - 1
 		m := &IqB1foHWg{Rf6N7kY6GVCs: 7, HNaaDh: v.xIwb7TaM, Tt1OfazA: seq, UlMT6MeaV2: 4096}
-		n := min(len(b), 32768)
+		n := min(len(b), v.kmcW3r.pattern.maxDataFragment())
 		if err := v.kmcW3r.WriteDataSegment(m, b[:n]); err != nil {
 			return total - len(b), err
 		}

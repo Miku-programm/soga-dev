@@ -11,6 +11,7 @@ import (
 	"math"
 	mathrand "math/rand"
 	"net"
+	"sync/atomic"
 	D "recovered.local/soga/buf/pool"
 	C "recovered.local/soga/config"
 	U "recovered.local/soga/user"
@@ -20,11 +21,17 @@ import (
 var trafficOutAt50983D0 = errors.New("user traffic out")
 var userHintRequiredAt50983E0 = errors.New("user hint required but not present")
 
+// panelForceUserHint 记录面板下发的 user_hint_is_mandatory。
+var panelForceUserHint atomic.Bool
+
+// SetPanelForceUserHint 由 mieru inbound 启动时按节点配置设置。
+func SetPanelForceUserHint(v bool) { panelForceUserHint.Store(v) }
+
 // ofDJn56sP0 @0x1c4dc00 and closure @0x1c5c940. Match hints first;
 // the optional fallback group is searched afterwards. The hint is the username,
 // while the password derives the encryption key with a NUL and username salt.
 func ofDJn56sP0(nonce, ciphertext []byte, iterate func(func(*U.WIZQ28) bool)) (U.PgaNd3014U, cipher.AEAD, []byte, error) {
-	force := C.MieruForceUserHint()
+	force := C.MieruForceUserHint() || panelForceUserHint.Load()
 	var matching, remaining []*U.WIZQ28
 	iterate(func(user *U.WIZQ28) bool {
 		if pyUlp642nl(user.GetUsername(), nonce) {

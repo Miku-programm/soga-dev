@@ -119,5 +119,23 @@ func (n *BdT6k1HU8L) ToPanelNode(id int) (*L.Wr5SVP, error) {
 		Ck6DxjB:    L.VkkFLH{GJtOdKOWBiFP: n.IhUtwVuCp, XmIaPj3CzOF: n.FoQe96xgtPg, WAdJ4ftdZFk: security, Nd3mBux1: path, J1efyloFyhk: service, NMzMUQ2: n.HfRMkQmY7, BANVIZ72wh: names, CrS6C1: n.PNpnXla.K2YRRA, DxKJ7lSe3m8F: shorts, IqSfNzea: dest, DlDK5Y9AS: decryption, FPhrzP645: xhttp},
 		AYf5kQSQW:  L.ZMYytVS{Li6nvK1: n.LQQHdt4QjrX, PIvpxN6YK: n.IhUtwVuCp, B30Jt2kO: addrtype.B3YC1rotZ(n.YHnnp66mM), UjgtNuouuKVl: n.F7emlj, HnHarW: n.Ada6jz_, W4ggEz: n.MAKypb},
 		QaZjDzw95:  L.Tt_Moslrup{CgE0xkW: n.IhUtwVuCp, UPnToXrM: padding, J6bt8AOW8fL8: legacySecurity, Jq7YxRdb18Xx: names, CTa7WN: n.PNpnXla.K2YRRA, NWbT7wk: shorts, F9P9aeOu23U: dest},
+		ABA4hq:     n.mieruConfig(),
 	}, nil
+}
+
+// mieruConfig 把 xiaov2b 的 mieru 节点配置转换为 soga 内部结构；port_bindings 中的端口范围优先于 server_port。
+func (n *BdT6k1HU8L) mieruConfig() L.Xh4IiOa0 {
+	out := L.Xh4IiOa0{MQE3K4mq: n.IhUtwVuCp, GGSLzD: strings.ToUpper(string(n.FoQe96xgtPg)), CLWr9bQsb: n.MieruTrafficPattern, ForceUserHint: n.MieruUserHint}
+	if len(n.MieruPortBindings) > 0 {
+		b := n.MieruPortBindings[0]
+		if b.PortRange != "" {
+			out.PortRange = b.PortRange
+		} else if b.Port != 0 && out.MQE3K4mq == 0 {
+			out.MQE3K4mq = b.Port
+		}
+		if b.Protocol != "" {
+			out.GGSLzD = strings.ToUpper(b.Protocol)
+		}
+	}
+	return out
 }

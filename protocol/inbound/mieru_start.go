@@ -8,6 +8,8 @@ import (
 	N "recovered.local/soga/net/limit"
 	C "recovered.local/soga/config"
 	Log "recovered.local/soga/util/logx"
+	M "recovered.local/soga/protocol/mieru"
+	"strconv"
 	"strings"
 )
 
@@ -27,6 +29,10 @@ func (v *ONGT2EHM40r) Start() error { //0x1d5f460
 	network := strings.ToUpper(p.GGSLzD)
 	if network != "" && network != "TCP" {
 		return fmt.Errorf("unsupported mieru transport: %v (only TCP is supported)", p.GGSLzD)
+	}
+	M.SetPanelForceUserHint(p.ForceUserHint)
+	if err := M.SetTrafficPattern(p.CLWr9bQsb); err != nil {
+		return err
 	}
 	listeners, err := v.p7SNWA(p)
 	if err != nil {
@@ -55,16 +61,39 @@ func (v *ONGT2EHM40r) p7SNWA(p *L.Xh4IiOa0) (listeners []net.Listener, err error
 			}
 		}
 	}()
+	first, last, err := mieruPorts(p)
+	if err != nil {
+		return nil, err
+	}
 	for _, host := range C.EdlWFAt() {
-		proxy, force := C.ListenerProxyProtocolSettings()
-		options := &P.Ap9uD2{Host: host, Port: p.MQE3K4mq, Network: "tcp", ProxyProtocol: proxy, ForceProxyProtocol: force, Tunnel: tunnel}
-		l, e := options.NewListener()
-		if e != nil {
-			return nil, e
+		for port := first; port <= last; port++ {
+			proxy, force := C.ListenerProxyProtocolSettings()
+			options := &P.Ap9uD2{Host: host, Port: port, Network: "tcp", ProxyProtocol: proxy, ForceProxyProtocol: force, Tunnel: tunnel}
+			l, e := options.NewListener()
+			if e != nil {
+				return nil, e
+			}
+			opened = append(opened, l)
+			Log.V8GN5Stk(0, "mieru listen %v", options.String())
 		}
-		opened = append(opened, l)
-		Log.V8GN5Stk(0, "mieru listen %v", options.String())
 	}
 	success = true
 	return opened, nil
+}
+
+// mieruPorts 返回监听端口区间；PortRange 为空时只监听 MQE3K4mq。
+func mieruPorts(p *L.Xh4IiOa0) (int, int, error) {
+	if p.PortRange == "" {
+		return p.MQE3K4mq, p.MQE3K4mq, nil
+	}
+	lo, hi, found := strings.Cut(p.PortRange, "-")
+	if !found {
+		hi = lo
+	}
+	first, err1 := strconv.Atoi(strings.TrimSpace(lo))
+	last, err2 := strconv.Atoi(strings.TrimSpace(hi))
+	if err1 != nil || err2 != nil || first < 1 || last > 65535 || first > last {
+		return 0, 0, fmt.Errorf("invalid mieru port range: %v", p.PortRange)
+	}
+	return first, last, nil
 }

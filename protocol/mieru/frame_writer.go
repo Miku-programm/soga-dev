@@ -7,6 +7,7 @@ import (
 	D "recovered.local/soga/buf/pool"
 	U "recovered.local/soga/buf/bufiface"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -18,6 +19,10 @@ type qhFcsZC struct {
 	g9zKwmF      []byte
 	oynKh2Fa     bool
 	rAB3kZi8     string
+	// pattern 为创建连接时生效的 traffic pattern，nil 表示保持原行为。
+	pattern *trafficPattern
+	// clientLowEntropy 在收到客户端低熵数据帧后置位，之后服务端才发送低熵数据帧。
+	clientLowEntropy atomic.Bool
 }
 
 func vfhZtLu(conn net.Conn, aead cipher.AEAD, password string) (*qhFcsZC, error) { //0x1c535c0
@@ -25,7 +30,15 @@ func vfhZtLu(conn net.Conn, aead cipher.AEAD, password string) (*qhFcsZC, error)
 	if err != nil {
 		return nil, fmt.Errorf("generate nonce: %w", err)
 	}
-	return &qhFcsZC{_z_j84: conn, yn5oQQkf8: aead, g9zKwmF: nonce, oynKh2Fa: true, rAB3kZi8: password}, nil
+	// 与 mieru 一致：先按 pattern 改写 nonce 前缀，再写入依赖 nonce[:16] 的用户提示。
+	pattern := currentTrafficPattern()
+	if pattern != nil {
+		pattern.applyNonce(nonce)
+		if password != "" {
+			uJghIeaJPse(nonce, password)
+		}
+	}
+	return &qhFcsZC{_z_j84: conn, yn5oQQkf8: aead, g9zKwmF: nonce, oynKh2Fa: true, rAB3kZi8: password, pattern: pattern}, nil
 }
 
 // incrementNonce is an analyst name for the repeated original big-endian loop.
@@ -60,6 +73,9 @@ func (w *qhFcsZC) WriteSessionSegment(m *IqB1foHWg, payload ...[]byte) error {
 		size += len(p)
 	}
 	padding := a2dHepfMMQ(size, w.rAB3kZi8)
+	if limit := w.pattern.maxEnd(); limit >= 0 {
+		padding = sessionPadding(size, w.rAB3kZi8, limit)
+	}
 	m.HPUJVQ0S = uint16(size)
 	m.FO7MEJ = byte(len(padding))
 	m.WyK3yKmJKe1V = uint32(time.Now().Unix() / 60)
@@ -85,18 +101,36 @@ func (w *qhFcsZC) WriteSessionSegment(m *IqB1foHWg, payload ...[]byte) error {
 		w.bBLmwPhjPp54(b, payload)
 	}
 	_, _ = b.Write(padding)
-	_, err := w._z_j84.Write(b.Bytes())
-	return err
+	return w.pattern.writeFragmented(w._z_j84, b.Bytes())
 }
 
 func (w *qhFcsZC) WriteDataSegment(m *IqB1foHWg, payload ...[]byte) error { //0x1c53c80
 	prefix, suffix := byte(ofUaiB3MIo(256)), byte(ofUaiB3MIo(256))
+	if limit := w.pattern.maxMiddle(); limit >= 0 {
+		prefix = byte(min(ofUaiB3MIo(limit+1), limit))
+	}
+	if limit := w.pattern.maxEnd(); limit >= 0 {
+		suffix = byte(min(ofUaiB3MIo(limit+1), limit))
+	}
 	size := 0
 	for _, p := range payload {
 		size += len(p)
 	}
+	wireSize := size
+	lowEntropy := false
+	if mode, rotation := w.pattern.lowEntropy(); mode != lowEntropyModeOff && m.Rf6N7kY6GVCs == 7 && w.clientLowEntropy.Load() {
+		n, err := lowEntropyEncodedLen(size, mode)
+		if err != nil {
+			return err
+		}
+		lowEntropy, wireSize = true, n
+		m.Rf6N7kY6GVCs = 11
+		m.LowEntropyMode, m.LowEntropyRotation = mode, rotation
+		m.LowEntropyMask = newLowEntropyHalfMask(mode)
+		m.ExtractedPayloadLen = uint16(size)
+	}
 	m.B8QsA0N2yo = prefix
-	m.HPUJVQ0S = uint16(size)
+	m.HPUJVQ0S = uint16(wireSize)
 	m.FO7MEJ = suffix
 	m.WyK3yKmJKe1V = uint32(time.Now().Unix() / 60)
 	w.v_7InizyTC22.Lock()
@@ -107,7 +141,7 @@ func (w *qhFcsZC) WriteDataSegment(m *IqB1foHWg, payload ...[]byte) error { //0x
 		capacity += 24
 	}
 	if size > 0 {
-		capacity += size + 16
+		capacity += wireSize + 16
 	}
 	b := D.S4OQXWIZ(capacity)
 	defer b.Free()
@@ -118,7 +152,17 @@ func (w *qhFcsZC) WriteDataSegment(m *IqB1foHWg, payload ...[]byte) error { //0x
 	incrementNonce(w.g9zKwmF)
 	w.oynKh2Fa = false
 	b.WriteRandom(int(prefix))
-	if size > 0 {
+	if size > 0 && lowEntropy {
+		// 低熵编码作用于密文主体，AEAD tag 原样附在后面。
+		plain := make([]byte, 0, size)
+		for _, p := range payload {
+			plain = append(plain, p...)
+		}
+		sealed := w.yn5oQQkf8.Seal(nil, w.g9zKwmF, plain, nil)
+		incrementNonce(w.g9zKwmF)
+		_, _ = b.Write(encodeLowEntropy(sealed[:size], m.LowEntropyMode, m.LowEntropyMask, m.LowEntropyRotation))
+		_, _ = b.Write(sealed[size:])
+	} else if size > 0 {
 		w.bBLmwPhjPp54(b, payload)
 	}
 	b.WriteRandom(int(suffix))

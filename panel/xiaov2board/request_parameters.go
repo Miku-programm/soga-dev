@@ -18,7 +18,7 @@ func (p *LRlqOaYmO) cIbNGPeZYyl() string {
 		return "shadowsocks"
 	case "v2ray":
 		return "v2ray"
-	case "vless", "anytls", "hysteria":
+	case "vless", "anytls", "hysteria", "mieru":
 		return string(p.EA_5pkz.ZyAhkq5th8bf)
 	case "trojan":
 		return "trojan"

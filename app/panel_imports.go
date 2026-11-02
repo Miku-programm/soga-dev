@@ -48,6 +48,7 @@ import (
 	_ "recovered.local/soga/panel/reg/xiaov2boardtrojanwebapi"
 	_ "recovered.local/soga/panel/reg/xiaov2boardsswebapi"
 	_ "recovered.local/soga/panel/reg/xiaov2boardanytlswebapi"
+	_ "recovered.local/soga/panel/reg/xiaov2boardmieruwebapi"
 
 	_ "recovered.local/soga/panel/reg/v2boardv2raywebapi"
 	_ "recovered.local/soga/panel/reg/v2boardtrojanwebapi"
