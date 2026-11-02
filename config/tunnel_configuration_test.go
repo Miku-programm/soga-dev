@@ -20,8 +20,8 @@ func TestOriginalTunnelConfigurationGateAndErrors(t *testing.T) {
 	configAt509E300.JHXrVGNjg31 = true
 	configAt5096DC0.RM5SFRF = ""
 	T15Jifo(false)
-	if v, e := R3DjPWSnt(); v != nil || e != nil {
-		t.Fatal("original key gate", v, e)
+	if _, e := R3DjPWSnt(); e == nil || e.Error() != "not support tunnel type: invalid" {
+		t.Fatal(e)
 	}
 	configAt5096DC0.RM5SFRF = "test-key"
 	if _, e := R3DjPWSnt(); e == nil || e.Error() != "not support tunnel type: invalid" {

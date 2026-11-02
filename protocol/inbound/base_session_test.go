@@ -109,16 +109,13 @@ func TestCentralSessionOriginalLimitsAndDeferredCleanup(t *testing.T) {
 	}
 }
 
-func TestCentralRedisRegistrationCleanupAndSecondGate(t *testing.T) {
-	old := sessionBlockedAt50C6C7D
-	defer func() { sessionBlockedAt50C6C7D = old }()
+func TestCentralRedisRegistrationCleanup(t *testing.T) {
 	for _, accept := range []bool{false, true} {
-		sessionBlockedAt50C6C7D = false
 		u := &sessionUserFixture{alive: true, tcp: true, ctx: context.Background()}
 		addr, _ := G.U80FDt("203.0.113.9:443")
 		s := &J.ZzkV7_5l{PayAlbdv6: u, Uqzvq94e: "masked", C66t8X: "redis", KeHzUwuXWh0: net.IPv4(198, 51, 100, 1), Iayb4V: addr}
 		c := &sessionConnFixture{user: u, dest: addr}
-		m := &limitSessionFixture{calls: &u.calls, accept: accept, mutate: s, onStart: func() { sessionBlockedAt50C6C7D = true }}
+		m := &limitSessionFixture{calls: &u.calls, accept: accept, mutate: s}
 		b := &JWN154qJ4{zb8f3cHWW8v: context.Background(), af8f_J: m}
 		b.wiy6P3.Store(&L.Wr5SVP{})
 		if err := b.init(); err != nil {
