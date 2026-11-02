@@ -47,9 +47,24 @@ func (c *sessionConnFixture) Close() error {
 	}
 	return nil
 }
-func (c *sessionConnFixture) Read(p []byte) (int, error) { return 0, net.ErrClosed }
-func (c *sessionConnFixture) SetReadDeadline(time.Time) error { return nil }
-func (c *sessionConnFixture) RemoteAddr() net.Addr { return &net.TCPAddr{} }
+func (c *sessionConnFixture) Read(p []byte) (int, error) {
+	if c.Conn != nil {
+		return c.Conn.Read(p)
+	}
+	return 0, net.ErrClosed
+}
+func (c *sessionConnFixture) SetReadDeadline(t time.Time) error {
+	if c.Conn != nil {
+		return c.Conn.SetReadDeadline(t)
+	}
+	return nil
+}
+func (c *sessionConnFixture) RemoteAddr() net.Addr {
+	if c.Conn != nil {
+		return c.Conn.RemoteAddr()
+	}
+	return &net.TCPAddr{}
+}
 func (c *sessionConnFixture) GetDestAddr() *G.AHU2MRmjzQu { return c.dest }
 func (c *sessionConnFixture) GetUser() N.PgaNd3014U       { return c.user }
 func (c *sessionConnFixture) NetworkType() J.ZES6F5       { return c.kind }
