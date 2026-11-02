@@ -241,3 +241,22 @@ func TestNativeMieruConstructStartTCPUDPStop(t *testing.T) {
 		})
 	}
 }
+
+func TestMieruPorts(t *testing.T) {
+	for _, tc := range []struct {
+		p           L.Xh4IiOa0
+		first, last int
+		ok          bool
+	}{
+		{L.Xh4IiOa0{MQE3K4mq: 443}, 443, 443, true},
+		{L.Xh4IiOa0{MQE3K4mq: 2012, PortRange: "2012-2022"}, 2012, 2022, true},
+		{L.Xh4IiOa0{PortRange: "3000"}, 3000, 3000, true},
+		{L.Xh4IiOa0{PortRange: "20-10"}, 0, 0, false},
+		{L.Xh4IiOa0{PortRange: "1-70000"}, 0, 0, false},
+	} {
+		first, last, err := mieruPorts(&tc.p)
+		if (err == nil) != tc.ok || first != tc.first || last != tc.last {
+			t.Fatalf("%+v: %v %v %v", tc.p, first, last, err)
+		}
+	}
+}

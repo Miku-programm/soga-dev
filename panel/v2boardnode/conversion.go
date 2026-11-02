@@ -53,17 +53,11 @@ func connLimit(a, b int) int {
 func (p *Pn5vgsrEm5) GetUser(index int) *L.Aga91y {
 	out := &L.Aga91y{WZ89pTAOrHK4: p.EgeihzZFfj, LmOKwjha: speedLimit(p.Z_Y4R2Rbg, C.PanelUserSpeedLimit()), Xmrna8: C.PanelUserConnectionLimit(), B4DYSxuA31za: C.PanelUserTCPLimit()}
 	out.JAfXWwzYrW = &L.Yn8BJoL{SfiEGpJo: p.Z6TxVE4XB}
-	if !firstUsersAt378731C && C.Q0SDIN() && index >= 88 {
-		out.JAfXWwzYrW = nil
-	}
 	return out
 }
 
 // v2boardnode.(*FaNycS0m).GetUsers：原样本入口 0x16cf2a0。
 func (p *FaNycS0m) GetUsers() L.Sxcf3wu3L {
-	if !firstUsersAt378731C && C.JatfUF38O() && len(p.GPETCf2) > 88 {
-		p.GPETCf2 = p.GPETCf2[:88]
-	}
 	out := make(L.Sxcf3wu3L, 0)
 	for i, u := range p.GPETCf2 {
 		out = append(out, u.GetUser(i))

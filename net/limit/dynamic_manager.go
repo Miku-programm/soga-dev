@@ -33,7 +33,7 @@ func DMIy6PEVB(ctx context.Context, users *N.ZpNFqUVZp) *XKYW8YhsbqJ {
 
 // init: 0x18310e0. No worker is started if disabled at construction.
 func (m *XKYW8YhsbqJ) init() {
-	if C.DynamicConfiguration().DiN7MxyB7 && !C.HuQEoQ() {
+	if C.DynamicConfiguration().DiN7MxyB7 {
 		go m.dTRa2vHe5()
 	}
 }
@@ -45,7 +45,7 @@ func (m *XKYW8YhsbqJ) dTRa2vHe5() {
 	for {
 		select {
 		case <-ticker.C:
-			if C.DynamicConfiguration().DiN7MxyB7 && !C.HuQEoQ() {
+			if C.DynamicConfiguration().DiN7MxyB7 {
 				m._jEz0Fre9w()
 			}
 		case <-m.a119HAhPh7oZ.Done():
@@ -90,7 +90,7 @@ func (m *XKYW8YhsbqJ) _5fobl7OClw4(user N.PgaNd3014U) {
 
 // GetUserSpeedLimit: 0x1831700.
 func (m *XKYW8YhsbqJ) GetUserSpeedLimit(id int64) (float64, bool) {
-	if C.DynamicConfiguration().DiN7MxyB7 && !C.HuQEoQ() && m.f9fwna9vs.Load() && !m.rbjjjB5m6T.GK1kRuhBCq.Has(id) {
+	if C.DynamicConfiguration().DiN7MxyB7 && m.f9fwna9vs.Load() && !m.rbjjjB5m6T.GK1kRuhBCq.Has(id) {
 		return m.xBTUM1U2bEY.GetUserSpeedLimit(id)
 	}
 	return 0, false

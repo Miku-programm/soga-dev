@@ -6,7 +6,6 @@ import (
 	G "recovered.local/soga/util/genmap"
 	P "recovered.local/soga/transport/hysteriapad"
 	L "recovered.local/soga/panel/types"
-	C "recovered.local/soga/config"
 	Log "recovered.local/soga/util/logx"
 	U "recovered.local/soga/user"
 	Q "recovered.local/soga/panel/registry"
@@ -54,9 +53,6 @@ func (v *R_n5ucb) spcNlUL(panels L.Sxcf3wu3L) { // 0x1d345a0
 	if panels == nil {
 		panels = L.Sxcf3wu3L{}
 	}
-	if C.Q0SDIN() && len(panels) > 88 {
-		panels = panels[:88]
-	}
 	seen := make(map[int64]*L.Aga91y)
 	for _, panel := range panels {
 		speed, limited := v.oSsZZT4EmeG.GetUserSpeedLimit(panel.WZ89pTAOrHK4)
@@ -98,9 +94,6 @@ func (v *R_n5ucb) spcNlUL(panels L.Sxcf3wu3L) { // 0x1d345a0
 		}
 		return true
 	})
-	if C.Q0SDIN() && len(panels) > 88 {
-		v.jc_QPN6.Range(func(id int64, user U.PgaNd3014U) bool { user.ResetCtx(); v.jc_QPN6.Delete(id); return true })
-	}
 	userCountAt50C6DA0 = len(panels)
 	Log.V8GN5Stk(0, "current user num: %v", len(panels))
 	v.fUxO7UYAH = len(panels)

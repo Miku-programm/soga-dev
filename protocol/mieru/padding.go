@@ -42,10 +42,18 @@ func ofUaiB3MIo(n int) int {
 }
 
 func a2dHepfMMQ(payload int, key string) []byte { // 0x1c4b5a0
-	if jyDI5g(2, key) != 0 {
-		return yR3UD3cAea(255, payload+64)
+	return sessionPadding(payload, key, 255)
+}
+
+// sessionPadding 是 a2dHepfMMQ 加上 traffic pattern 的 maxEndPaddingLen 上限。
+func sessionPadding(payload int, key string, maximum int) []byte {
+	if maximum <= 0 {
+		return nil
 	}
-	return rRHwjt(255, min(paddingFloorAt50C7928, 255))
+	if jyDI5g(2, key) != 0 {
+		return yR3UD3cAea(maximum, payload+64)
+	}
+	return rRHwjt(maximum, min(paddingFloorAt50C7928, maximum))
 }
 
 func rRHwjt(maximum, minimum int) []byte { // 0x1c4b640

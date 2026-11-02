@@ -45,7 +45,7 @@ func receiveSSRDatagrams(ctx context.Context, pc *S.AXWGpkYq, queue chan J.AFui6
 		close(queue)
 	}()
 	enabled, _ := C.TunnelSettings()
-	tunnel := enabled && !C.Q0SDIN()
+	tunnel := enabled
 	buf := D.PoolAt50961D8.Get(4096)
 	defer func() { D.PoolAt50961D8.Put(buf) }()
 	for {

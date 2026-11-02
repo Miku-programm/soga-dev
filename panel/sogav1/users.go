@@ -71,9 +71,6 @@ func (u *D6uXyl88ab7) ToPanelUser(kind C.Mpn2JltM) *L.Aga91y {
 var stateAt3787335 byte = 1
 
 func (users DdDyLf6D) ToPanelUsers(kind C.Mpn2JltM) L.Sxcf3wu3L {
-	if stateAt3787335 == 0 && C.Q0SDIN() && len(users) > 88 {
-		users = users[:88]
-	}
 	out := make(L.Sxcf3wu3L, 0, len(users))
 	for _, u := range users {
 		out = append(out, u.ToPanelUser(kind))

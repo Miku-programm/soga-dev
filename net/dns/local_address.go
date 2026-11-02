@@ -5,9 +5,9 @@ import (
 	"recovered.local/soga/config"
 )
 
-// bQkmjIa: 0x158ab60。配置和授权状态检查顺序与原指令一致。
+// bQkmjIa: 0x158ab60。配置检查与原指令顺序一致。
 func bQkmjIa(address net.Addr) net.IP {
-	if address == nil || config.Q0SDIN() || !config.AutoOutIPEnabled() {
+	if address == nil || !config.AutoOutIPEnabled() {
 		return nil
 	}
 	var ip net.IP

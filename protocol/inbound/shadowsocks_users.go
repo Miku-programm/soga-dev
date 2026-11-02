@@ -6,7 +6,6 @@ import (
 	"recovered.local/soga/net/sess"
 	"recovered.local/soga/panel/types"
 	"recovered.local/soga/net/limit"
-	"recovered.local/soga/config"
 	"recovered.local/soga/util/logx"
 	"recovered.local/soga/user"
 	"recovered.local/soga/panel/registry"
@@ -49,9 +48,6 @@ func (v *Lp07FzBLx9V) UpdateAPIData(data *registry.D5gTIZ5aVg) bool {
 func (v *Lp07FzBLx9V) spcNlUL(panels types.Sxcf3wu3L) {
 	if panels == nil {
 		panels = types.Sxcf3wu3L{}
-	}
-	if config.Q0SDIN() && len(panels) > 88 {
-		panels = panels[:88]
 	}
 	seen := make(map[int64]struct{})
 	removed := []user.PgaNd3014U{}
@@ -109,16 +105,6 @@ func (v *Lp07FzBLx9V) spcNlUL(panels types.Sxcf3wu3L) {
 	})
 	if v.wZhn2Y != nil {
 		v.wZhn2Y.RemoveUsers(removed)
-	}
-	if config.HuQEoQ() && len(panels) > 88 {
-		v.jc_QPN6.Range(func(id int64, user user.PgaNd3014U) bool {
-			user.ResetCtx()
-			v.jc_QPN6.Delete(id)
-			if v.mCYkzsUd != nil {
-				v.mCYkzsUd.RemoveUser(id)
-			}
-			return true
-		})
 	}
 	userCountAt50C6DA0 = len(panels)
 	logx.V8GN5Stk(0, "current user num: %v", len(panels))

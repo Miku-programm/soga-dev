@@ -48,15 +48,9 @@ func (u *QhOI5ti) GetUser(protocol C.Mpn2JltM, index int64) *L.Aga91y {
 		global = count
 	}
 	out := &L.Aga91y{WZ89pTAOrHK4: u.BD16miI0, LmOKwjha: speed, Xmrna8: global, B4DYSxuA31za: C.PanelUserTCPLimit(), XuBBcTThBW: u.DpaCpPFc, UWsYsmytTi: u.VsaEfGizz2x, IUlI_15Qf_: u.DhjDXGJ1F2i, JAfXWwzYrW: credential}
-	if stateAt3787337 == 0 && C.JatfUF38O() && index >= 88 {
-		out.JAfXWwzYrW = nil
-	}
 	return out
 }
 func (r *O8T6nD3uPzb) GetUsers(protocol C.Mpn2JltM) L.Sxcf3wu3L {
-	if stateAt3787337 == 0 && C.Rs_wP3R() && len(r.L8xOe2JrpGDq) > 88 {
-		r.L8xOe2JrpGDq = r.L8xOe2JrpGDq[:88]
-	}
 	out := make(L.Sxcf3wu3L, 0)
 	for i, u := range r.L8xOe2JrpGDq {
 		out = append(out, u.GetUser(protocol, int64(i)))

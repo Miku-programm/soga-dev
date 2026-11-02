@@ -139,6 +139,9 @@ func (s *WMK1ddta3da) d8yPV78aE(seg *jjyc26) error { //0x1c55600
 		return s.qzQPqE1Bn4fD(seg)
 	case 6:
 		return s.bH_Ryqwc5(seg)
+	case 10:
+		s.pZaZ0uHV2KJ.clientLowEntropy.Store(true)
+		return s.bH_Ryqwc5(seg)
 	case 8:
 		return nil
 	default:

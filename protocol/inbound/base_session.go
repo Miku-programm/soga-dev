@@ -48,9 +48,6 @@ func (b *JWN154qJ4) xR518G_hBbKv(s *J.ZzkV7_5l, conn J.Ki8urSHTx44) {
 			L.V8GN5Stk(-4, "block address: %v", dest)
 			return
 		}
-		if SessionBlocked() {
-			return
-		}
 	}
 	ctx, cancel := context.WithCancel(b.zb8f3cHWW8v)
 	defer cancel()
@@ -67,14 +64,12 @@ func (b *JWN154qJ4) xR518G_hBbKv(s *J.ZzkV7_5l, conn J.Ki8urSHTx44) {
 	} else {
 		user.RecordAliveIp(reportIP)
 	}
-	if !SessionBlocked() {
-		switch s.YlxwftjCvz_ {
-		case 0:
-			b.lbGar_(ctx, s, conn)
-		case 1:
-			b.nEFMCmrMs(ctx, s, conn)
-		default:
-			L.TRTbrquD(-4, "unknown proxy conn:", conn)
-		}
+	switch s.YlxwftjCvz_ {
+	case 0:
+		b.lbGar_(ctx, s, conn)
+	case 1:
+		b.nEFMCmrMs(ctx, s, conn)
+	default:
+		L.TRTbrquD(-4, "unknown proxy conn:", conn)
 	}
 }

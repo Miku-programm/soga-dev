@@ -9,9 +9,9 @@ import (
 	L "recovered.local/soga/util/logx"
 )
 
-// R3DjPWSnt 对应 0x1330080。原全局配置与 Q0SDIN 条件均保留。
+// R3DjPWSnt 对应 0x1330080。移除授权检查，隧道始终按配置启用。
 func R3DjPWSnt() (*T.VTl94pzz2IkB, error) {
-	if !configAt509E300.JHXrVGNjg31 || Q0SDIN() {
+	if !configAt509E300.JHXrVGNjg31 {
 		return nil, nil
 	}
 	mode := configAt509E300.GbyJkc

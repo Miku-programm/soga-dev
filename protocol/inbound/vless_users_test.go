@@ -118,11 +118,11 @@ func TestVlessOriginalRestrictedUserCeiling(t *testing.T) {
 		panels[i] = panelVless(int64(i), fmt.Sprintf("%08x-1111-4111-8111-111111111111", i))
 	}
 	v.spcNlUL(panels)
-	if v.fUxO7UYAH != 88 || v.jc_QPN6.GTFAWF.Len() != 88 || v.vU51MPl_at_.Len() != 88 {
-		t.Fatal("original 88-user restriction")
+	if v.fUxO7UYAH != 90 || v.jc_QPN6.GTFAWF.Len() != 90 || v.vU51MPl_at_.Len() != 90 {
+		t.Fatal("user limit must be removed")
 	}
-	if _, ok := v.jc_QPN6.Get(88); ok {
-		t.Fatal("truncated tail accepted")
+	if _, ok := v.jc_QPN6.Get(88); !ok {
+		t.Fatal("user 88 must be present")
 	}
 }
 func TestVlessStopPreservesMapsAndClosesListener(t *testing.T) {

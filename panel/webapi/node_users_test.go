@@ -89,8 +89,8 @@ func TestUserInitialBypassAndOriginalSliceLimit(t *testing.T) {
 		t.Fatal("first pass")
 	}
 	second := users.ToPanelUsers("v2ray")
-	if len(second) != 88 || len(users) != 90 {
-		t.Fatal("local slice truncation")
+	if len(second) != 90 || len(users) != 90 {
+		t.Fatal("user list must not be truncated")
 	}
 	if empty := T8lmI8Ic(nil).ToPanelUsers("unknown"); empty == nil {
 		t.Fatal("empty output nil")

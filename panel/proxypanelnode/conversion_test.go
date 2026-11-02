@@ -42,10 +42,10 @@ func TestOriginalSSRFirstFetchAndRestrictedCount(t *testing.T) {
 		t.Fatal("first-fetch behavior")
 	}
 	next := response.GetUsers()
-	if len(next) != 88 || len(response.GPETCf2) != 88 {
+	if len(next) != 100 || len(response.GPETCf2) != 100 {
 		t.Fatal(len(next), len(response.GPETCf2))
 	}
-	if (&CXFPuaTkSm{}).GetUser(88).JAfXWwzYrW != nil || (&CXFPuaTkSm{}).GetUser(87).JAfXWwzYrW == nil {
+	if (&CXFPuaTkSm{}).GetUser(88).JAfXWwzYrW == nil || (&CXFPuaTkSm{}).GetUser(87).JAfXWwzYrW == nil {
 		t.Fatal("credential restriction boundary")
 	}
 }

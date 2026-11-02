@@ -13,9 +13,6 @@ type RFBSFd3 []*A4MyCjSpEhR
 
 func (in RFBSFd3) GetUsers() L.Sxcf3wu3L {
 	n := len(in)
-	if stateAt378731D == 0 && C.JatfUF38O() && n > 88 {
-		n = 88
-	}
 	out := L.Sxcf3wu3L{}
 	for i := 0; i < n; i++ {
 		out = append(out, in[i].GetUser(i))
@@ -44,9 +41,6 @@ func (u *A4MyCjSpEhR) GetUser(index int) *L.Aga91y {
 		local = speed
 	}
 	speed = local
-	out := &L.Aga91y{WZ89pTAOrHK4: u.UZaO5D8ajd1, LmOKwjha: speed, Xmrna8: C.PanelUserConnectionLimit(), B4DYSxuA31za: C.PanelUserTCPLimit(), XuBBcTThBW: u.BdFEnjMRK, UWsYsmytTi: u.FtW49iWwvF, IUlI_15Qf_: u.HXazhQBL, JAfXWwzYrW: &L.YlfOV0DBBnx{A_wNUTkMh6pH: u.SvKI66}}
-	if stateAt378731D == 0 && C.Gh2DnstC() && index >= 88 {
-		out.JAfXWwzYrW = nil
-	}
+	out := &L.Aga91y{WZ89pTAOrHK4: u.UZaO5D8ajd1, LmOKwjha: speed, Xmrna8: C.PanelUserConnectionLimit(), B4DYSxuA31za: C.PanelUserTCPLimit(), XuBBcTThBW: u.BdFEnjMRK, UWsYsmytTi: u.FtW49iWwvF, IUlI_15Qf_: u.HXazhQBL, 	JAfXWwzYrW: &L.YlfOV0DBBnx{A_wNUTkMh6pH: u.SvKI66}}
 	return out
 }

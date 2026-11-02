@@ -1385,7 +1385,7 @@ F_LABELS=(
     "① 面板上报类型 type（面板类型）"
     "② 节点协议 server_type"
     "③ 节点 ID (node_id)，必填，多个节点 ID 用英文逗号分隔（例: 1 或 1,2,3）"
-    "④ soga_key（授权码，选填；留空则为社区版，最多 88 名用户）"
+    "④ soga_key（授权码，选填）"
     "⑤ 面板对接方式"
     "⑥ WebAPI 根地址 webapi_url（如 https://your-panel.com/）"
     "⑦ WebAPI 密钥 webapi_key"

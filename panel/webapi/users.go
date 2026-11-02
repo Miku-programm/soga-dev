@@ -58,9 +58,6 @@ func (u *MACjYTsGk7G) ToPanelUser(protocol C.Mpn2JltM) *L.Aga91y {
 	return &L.Aga91y{WZ89pTAOrHK4: u.AnbiaLml0Bs, LmOKwjha: speed, Xmrna8: globalCount, B4DYSxuA31za: C.PanelUserTCPLimit(), JAfXWwzYrW: credential}
 }
 func (users T8lmI8Ic) ToPanelUsers(protocol C.Mpn2JltM) L.Sxcf3wu3L {
-	if stateAt3787334 == 0 && C.Q0SDIN() && len(users) > 88 {
-		users = users[:88]
-	}
 	out := make(L.Sxcf3wu3L, 0, len(users))
 	for _, u := range users {
 		out = append(out, u.ToPanelUser(protocol))

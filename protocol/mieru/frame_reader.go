@@ -39,7 +39,7 @@ func (r *rZDq_kinV4G) Read() (*jjyc26, error) { //0x1c4cec0
 
 func (r *rZDq_kinV4G) jQ8yjlkt(m *IqB1foHWg) (*jjyc26, error) { //0x1c4d360
 	kind := m.Rf6N7kY6GVCs | 1
-	if (kind == 7 || kind == 9) && m.B8QsA0N2yo != 0 {
+	if (kind == 7 || kind == 9 || kind == 11) && m.B8QsA0N2yo != 0 {
 		if err := G.KlTAqrF42mR(r.aMKXGpHBfg, int(m.B8QsA0N2yo)); err != nil {
 			return nil, fmt.Errorf("discard prefix padding: %w", err)
 		}
@@ -52,7 +52,18 @@ func (r *rZDq_kinV4G) jQ8yjlkt(m *IqB1foHWg) (*jjyc26, error) { //0x1c4d360
 			return nil, fmt.Errorf("read payload: %w", err)
 		}
 		incrementNonce(r.xUtUMCF3grV)
-		dest := D.PoolAt50961D8.Get(int(m.HPUJVQ0S))
+		plainLen := int(m.HPUJVQ0S)
+		if m.isLowEntropy() {
+			// 低熵帧：先去掉密文主体中的填充位，AEAD tag 原样保留。
+			body, err := decodeLowEntropy(encrypted[:m.HPUJVQ0S], int(m.ExtractedPayloadLen), m.LowEntropyMode, m.LowEntropyMask, m.LowEntropyRotation)
+			if err != nil {
+				D.PoolAt50961D8.Put(encrypted)
+				return nil, fmt.Errorf("decode low entropy payload: %w", err)
+			}
+			encrypted = append(append(encrypted[:0], body...), encrypted[m.HPUJVQ0S:]...)
+			plainLen = len(body)
+		}
+		dest := D.PoolAt50961D8.Get(plainLen)
 		var err error
 		payload, err = r.n49jm3JWYo.Open(dest[:0], r.xUtUMCF3grV, encrypted, nil)
 		D.PoolAt50961D8.Put(encrypted)

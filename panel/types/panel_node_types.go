@@ -116,6 +116,10 @@ type Xh4IiOa0 struct {
 	MQE3K4mq  int
 	GGSLzD    string
 	CLWr9bQsb string
+	// PortRange 形如 "2012-2022"，非空时监听整个范围。
+	PortRange string
+	// ForceUserHint 由面板下发，与本地 mieru_force_user_hint 取或。
+	ForceUserHint bool
 }
 
 // Aga91y 对应 0x36f31a0，amd64 大小 72 字节。

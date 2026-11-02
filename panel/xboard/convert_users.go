@@ -63,17 +63,11 @@ func (u *PForJoFExa) hqrXMTM9(serverType config.Mpn2JltM, index int) *types.Aga9
 		connections = globalConnections
 	}
 	out := &types.Aga91y{WZ89pTAOrHK4: u.IDLJXX6F, LmOKwjha: globalSpeed, Xmrna8: connections, B4DYSxuA31za: config.PanelUserTCPLimit(), JAfXWwzYrW: credential}
-	if stateAt378733B == 0 && config.Rs_wP3R() && index >= 88 {
-		out.JAfXWwzYrW = nil
-	}
 	return out
 }
 
 // ToPanelUsers 对应 0x17905e0；保留原切片长度修改和末尾共享字节复位。
 func (r *Sf0Wjail3Z) ToPanelUsers(serverType config.Mpn2JltM) types.Sxcf3wu3L {
-	if stateAt378733B == 0 && config.Q0SDIN() && len(r.Ta593Rq2lSa) > 88 {
-		r.Ta593Rq2lSa = r.Ta593Rq2lSa[:88]
-	}
 	out := make(types.Sxcf3wu3L, 0)
 	for i, user := range r.Ta593Rq2lSa {
 		out = append(out, user.hqrXMTM9(serverType, i))

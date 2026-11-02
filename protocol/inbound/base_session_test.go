@@ -3,12 +3,14 @@ package inbound
 import (
 	"context"
 	"net"
+	"reflect"
+	"testing"
+	"time"
+
 	G "recovered.local/soga/net/relay"
 	J "recovered.local/soga/net/sess"
 	L "recovered.local/soga/panel/types"
 	N "recovered.local/soga/user"
-	"reflect"
-	"testing"
 )
 
 type sessionUserFixture struct {
@@ -44,6 +46,24 @@ func (c *sessionConnFixture) Close() error {
 		return c.Conn.Close()
 	}
 	return nil
+}
+func (c *sessionConnFixture) Read(p []byte) (int, error) {
+	if c.Conn != nil {
+		return c.Conn.Read(p)
+	}
+	return 0, net.ErrClosed
+}
+func (c *sessionConnFixture) SetReadDeadline(t time.Time) error {
+	if c.Conn != nil {
+		return c.Conn.SetReadDeadline(t)
+	}
+	return nil
+}
+func (c *sessionConnFixture) RemoteAddr() net.Addr {
+	if c.Conn != nil {
+		return c.Conn.RemoteAddr()
+	}
+	return &net.TCPAddr{}
 }
 func (c *sessionConnFixture) GetDestAddr() *G.AHU2MRmjzQu { return c.dest }
 func (c *sessionConnFixture) GetUser() N.PgaNd3014U       { return c.user }
@@ -86,8 +106,6 @@ func TestCentralSessionOriginalLimitsAndDeferredCleanup(t *testing.T) {
 		{"alive denied", false, true, true, false, 2, []string{"alive:masked:masked"}},
 		{"tcp denied", true, false, true, false, 2, []string{"alive:masked:masked", "tcp", "delalive:masked:masked"}},
 		{"unknown kind balanced", true, true, true, false, 2, []string{"alive:masked:masked", "tcp", "ctx", "record:masked", "deltcp", "delalive:masked:masked"}},
-		{"early gate", true, true, true, true, 0, []string{"alive:masked:masked", "tcp", "deltcp", "delalive:masked:masked"}},
-		{"MUX gate after record", true, true, true, true, 2, []string{"alive:masked:masked", "tcp", "ctx", "record:masked", "deltcp", "delalive:masked:masked"}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			sessionBlockedAt50C6C7D = tc.blocked
@@ -111,16 +129,13 @@ func TestCentralSessionOriginalLimitsAndDeferredCleanup(t *testing.T) {
 	}
 }
 
-func TestCentralRedisRegistrationCleanupAndSecondGate(t *testing.T) {
-	old := sessionBlockedAt50C6C7D
-	defer func() { sessionBlockedAt50C6C7D = old }()
+func TestCentralRedisRegistrationCleanup(t *testing.T) {
 	for _, accept := range []bool{false, true} {
-		sessionBlockedAt50C6C7D = false
 		u := &sessionUserFixture{alive: true, tcp: true, ctx: context.Background()}
 		addr, _ := G.U80FDt("203.0.113.9:443")
 		s := &J.ZzkV7_5l{PayAlbdv6: u, Uqzvq94e: "masked", C66t8X: "redis", KeHzUwuXWh0: net.IPv4(198, 51, 100, 1), Iayb4V: addr}
-		c := &sessionConnFixture{user: u, dest: addr}
-		m := &limitSessionFixture{calls: &u.calls, accept: accept, mutate: s, onStart: func() { sessionBlockedAt50C6C7D = true }}
+		c := &sessionConnFixture{user: u, dest: addr, kind: 2}
+		m := &limitSessionFixture{calls: &u.calls, accept: accept, mutate: s}
 		b := &JWN154qJ4{zb8f3cHWW8v: context.Background(), af8f_J: m}
 		b.wiy6P3.Store(&L.Wr5SVP{})
 		if err := b.init(); err != nil {
