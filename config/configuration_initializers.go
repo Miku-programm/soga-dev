@@ -7,8 +7,10 @@ import (
 	"recovered.local/soga/audit/matcher"
 )
 
-// 原静态字符串 global 0x5029ee0 指向 "2.17.0"（6 字节）；本仓库发布版本为 2.17.1。
-var versionAt5029EE0 = "2.17.1"
+// 原静态字符串 global 0x5029ee0 指向 "2.17.0"（6 字节）。
+// 发布构建由 CI 通过 -ldflags "-X recovered.local/soga/config.versionAt5029EE0=<tag 去掉 v>" 注入版本号；
+// 此处默认值只用于本地构建，发版时也应同步更新。
+var versionAt5029EE0 = "2.17.2"
 var blockListAt5095A90 atomic.Pointer[matcher.VHWq49iRat]
 var whiteListAt5095AD8 atomic.Pointer[matcher.VHWq49iRat]
 

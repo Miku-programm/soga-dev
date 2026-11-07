@@ -20,7 +20,16 @@ jobs:
       - name: build all packages (${{ matrix.goarch }})
         run: GOOS=linux GOARCH=${{ matrix.goarch }} go build ./...
       - name: build soga binary (linux/${{ matrix.goarch }})
-        run: CGO_ENABLED=0 GOOS=linux GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags "-s -w" -o soga-linux-${{ matrix.goarch }} ./cmd/soga
+        run: |
+          ldflags="-s -w"
+          # tag 构建时用 tag 注入版本号（v2.17.2 -> 2.17.2），避免程序自报版本与 release 不一致
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            ldflags="$ldflags -X recovered.local/soga/config.versionAt5029EE0=${GITHUB_REF_NAME#v}"
+          fi
+          CGO_ENABLED=0 GOOS=linux GOARCH=${{ matrix.goarch }} go build -trimpath -ldflags "$ldflags" -o soga-linux-${{ matrix.goarch }} ./cmd/soga
+          if [[ "$GITHUB_REF" == refs/tags/v* && "${{ matrix.goarch }}" == amd64 ]]; then
+            test "$(./soga-linux-amd64 -v)" = "${GITHUB_REF_NAME#v}"
+          fi
       - run: ls -la soga-linux-${{ matrix.goarch }} && file soga-linux-${{ matrix.goarch }}
       - name: package soga-linux-${{ matrix.goarch }}.tar.gz
         run: |

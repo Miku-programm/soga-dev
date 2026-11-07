@@ -14,7 +14,7 @@
 
 set -o pipefail
 
-SCRIPT_VERSION="0.0.7"
+SCRIPT_VERSION="0.0.8"
 
 SOGA_REPO="${SOGA_REPO:-Miku-programm/soga-dev}"
 SOGA_BRANCH="${SOGA_BRANCH:-main}"
@@ -905,8 +905,13 @@ release_pick_from_list() {
 resolve_release() {
     local channel="$1" version="$2" v flat
     if [[ -n "${version// /}" ]]; then
-        v="$(strip_v "$version")"
+        # release tag 带 v 前缀（v2.17.2），用户可能输入 2.17.2 或 v2.17.2：先查 v 前缀，404 再查原样
+        v="v$(strip_v "$version")"
         github_get "$API_BASE/tags/$v" || fail "查询版本 $v 失败: $ERR" || return 1
+        if [[ "$HTTP_CODE" == "404" ]]; then
+            v="$(strip_v "$version")"
+            github_get "$API_BASE/tags/$v" || fail "查询版本 $v 失败: $ERR" || return 1
+        fi
         [[ "$HTTP_CODE" == "404" ]] && { fail "版本 $v 不存在"; return 1; }
         [[ "$HTTP_CODE" == "200" ]] || fail "GitHub API 返回 $HTTP_CODE" || return 1
         REL_FLAT="$(json_flatten <<<"$HTTP_BODY")"
