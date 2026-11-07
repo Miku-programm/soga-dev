@@ -11,7 +11,12 @@ import (
 	"sync"
 )
 
-// WMK1ddta3da retains the original 96-byte authenticated connection state.
+// WMK1ddta3da is the authenticated underlay connection state.
+//
+// 读循环（dTznYF0U）绝不直接写底层连接：openSessionResponse、closeSession* 等
+// 控制帧都放入 ctrl 队列，由 controlLoop 写出。否则当底层 TCP 发送缓冲被大流量
+// 打满时，读循环会等待写锁/写连接而停止读取；官方客户端的读循环同样会同步回写
+// closeSessionRequest，双方互相等待对方读取，整条连接永久断流。
 type WMK1ddta3da struct {
 	fFpIe7      context.Context
 	bl3UaWZlq   context.CancelFunc
@@ -22,7 +27,21 @@ type WMK1ddta3da struct {
 	pZaZ0uHV2KJ *qhFcsZC
 	aAwbr_m35W  *zXJm01kG7F4E
 	qPLI0s2     chan *TZ3YCqW
+
+	ctrlMu   sync.Mutex
+	ctrl     []controlFrame
+	ctrlWake chan struct{}
 }
+
+// controlFrame 是待写出的会话控制帧；stream 非空时写出后标记该流已打开。
+type controlFrame struct {
+	m      *IqB1foHWg
+	stream *xjTVP8
+}
+
+// maxDroppableControl 限制可丢弃控制帧（对未知会话的 closeSessionRequest）的积压。
+const maxDroppableControl = 1024
+
 type TZ3YCqW struct{ j_Ra2Blepbh *xjTVP8 }
 type zXJm01kG7F4E struct {
 	ocfcBS      sync.RWMutex
@@ -60,7 +79,7 @@ func (m *zXJm01kG7F4E) ihh5hvgSsIi() { //0x1c58420
 }
 func M_03miDCRcqa(ctx context.Context, conn net.Conn, resolver *N.O0UldNL4Eq) (*WMK1ddta3da, error) { //0x1c54f20
 	ctx, cancel := context.WithCancel(ctx)
-	s := &WMK1ddta3da{fFpIe7: ctx, bl3UaWZlq: cancel, jcTl_f8Fmn: conn, pnt0Bzyf: resolver, aAwbr_m35W: &zXJm01kG7F4E{w4gwnrQrrXj: make(map[uint32]*xjTVP8)}, qPLI0s2: make(chan *TZ3YCqW, 8)}
+	s := &WMK1ddta3da{fFpIe7: ctx, bl3UaWZlq: cancel, jcTl_f8Fmn: conn, pnt0Bzyf: resolver, aAwbr_m35W: &zXJm01kG7F4E{w4gwnrQrrXj: make(map[uint32]*xjTVP8)}, qPLI0s2: make(chan *TZ3YCqW, 8), ctrlWake: make(chan struct{}, 1)}
 	if err := s.init(); err != nil {
 		cancel()
 		return nil, err
@@ -83,12 +102,53 @@ func (s *WMK1ddta3da) init() error { //0x1c55100
 	if err != nil {
 		return err
 	}
+	writer.onError = func() { s.Close() }
 	s.eJsvyMJ = user
 	s.djqn5YPkLN = reader
 	s.pZaZ0uHV2KJ = writer
 	stop := context.AfterFunc(user.GetCtx(), func() { s.Close() })
+	go s.controlLoop()
 	go s.dTznYF0U(meta, stop)
 	return nil
+}
+
+// sendControl 把控制帧放入写出队列，从不阻塞。droppable 帧在积压过多时丢弃。
+func (s *WMK1ddta3da) sendControl(m *IqB1foHWg, stream *xjTVP8, droppable bool) {
+	s.ctrlMu.Lock()
+	if droppable && len(s.ctrl) >= maxDroppableControl {
+		s.ctrlMu.Unlock()
+		return
+	}
+	s.ctrl = append(s.ctrl, controlFrame{m: m, stream: stream})
+	s.ctrlMu.Unlock()
+	select {
+	case s.ctrlWake <- struct{}{}:
+	default:
+	}
+}
+
+// controlLoop 按入队顺序写出控制帧；写失败时拆除整条连接。
+func (s *WMK1ddta3da) controlLoop() {
+	for {
+		select {
+		case <-s.fFpIe7.Done():
+			return
+		case <-s.ctrlWake:
+		}
+		s.ctrlMu.Lock()
+		frames := s.ctrl
+		s.ctrl = nil
+		s.ctrlMu.Unlock()
+		for _, f := range frames {
+			if err := s.pZaZ0uHV2KJ.WriteSessionSegment(f.m); err != nil {
+				s.Close()
+				return
+			}
+			if f.stream != nil {
+				close(f.stream.opened)
+			}
+		}
+	}
 }
 func (s *WMK1ddta3da) Next() (*TZ3YCqW, error) { //0x1c55360
 	select {
@@ -149,7 +209,6 @@ func (s *WMK1ddta3da) d8yPV78aE(seg *jjyc26) error { //0x1c55600
 	}
 }
 
-// No extra payload cleanup is added on duplicate/unknown-session paths.
 func (s *WMK1ddta3da) z33kfUKtTYUZ(seg *jjyc26) error { //0x1c55780
 	id := seg.jaPY7RU.HNaaDh
 	if id == 0 {
@@ -160,17 +219,13 @@ func (s *WMK1ddta3da) z33kfUKtTYUZ(seg *jjyc26) error { //0x1c55780
 	}
 	stream := vnqzugKQF1jX(id, s.eJsvyMJ, s.jcTl_f8Fmn, s.pZaZ0uHV2KJ)
 	stream.auBuNh = s.fTCBPKK
+	stream.opened = make(chan struct{})
+	stream.done = s.fFpIe7.Done()
 	s.aAwbr_m35W.iptPyaqX(id, stream)
 	if len(seg.mzrzt1uBj) > 0 {
-		select {
-		case stream.xfdnp9xA <- seg.mzrzt1uBj:
-		case <-stream.zhIY4QEke:
-			D.PoolAt50961D8.Put(seg.mzrzt1uBj)
-		}
+		stream.deliver(seg.mzrzt1uBj)
 	}
-	if err := s.pZaZ0uHV2KJ.WriteSessionSegment(&IqB1foHWg{Rf6N7kY6GVCs: 3, HNaaDh: id, Tt1OfazA: stream.qYZ2Uu.Add(1) - 1}); err != nil {
-		return fmt.Errorf("write openSessionResponse: %w", err)
-	}
+	s.sendControl(&IqB1foHWg{Rf6N7kY6GVCs: 3, HNaaDh: id, Tt1OfazA: stream.qYZ2Uu.Add(1) - 1}, stream, false)
 	select {
 	case s.qPLI0s2 <- &TZ3YCqW{stream}:
 		return nil
@@ -182,7 +237,7 @@ func (s *WMK1ddta3da) qzQPqE1Bn4fD(seg *jjyc26) error { //0x1c55d80
 	if stream, ok := s.aAwbr_m35W.jJn3FR6HBm5A(seg.jaPY7RU.HNaaDh); ok {
 		stream.Close()
 		if seg.jaPY7RU.Rf6N7kY6GVCs == 4 {
-			s.pZaZ0uHV2KJ.WriteSessionSegment(&IqB1foHWg{Rf6N7kY6GVCs: 5, HNaaDh: stream.xIwb7TaM, Tt1OfazA: stream.qYZ2Uu.Add(1) - 1})
+			s.sendControl(&IqB1foHWg{Rf6N7kY6GVCs: 5, HNaaDh: stream.xIwb7TaM, Tt1OfazA: stream.qYZ2Uu.Add(1) - 1}, nil, false)
 		}
 	}
 	return nil
@@ -190,19 +245,16 @@ func (s *WMK1ddta3da) qzQPqE1Bn4fD(seg *jjyc26) error { //0x1c55d80
 func (s *WMK1ddta3da) bH_Ryqwc5(seg *jjyc26) error { //0x1c55e60
 	if stream, ok := s.aAwbr_m35W.mS0qzOa(seg.jaPY7RU.HNaaDh); ok {
 		if len(seg.mzrzt1uBj) > 0 {
-			select {
-			case stream.xfdnp9xA <- seg.mzrzt1uBj:
-			case <-stream.zhIY4QEke:
-				D.PoolAt50961D8.Put(seg.mzrzt1uBj)
-			}
+			stream.deliver(seg.mzrzt1uBj)
 		}
 	} else {
-		s.pZaZ0uHV2KJ.WriteSessionSegment(&IqB1foHWg{Rf6N7kY6GVCs: 4, HNaaDh: seg.jaPY7RU.HNaaDh, Tt1OfazA: seg.jaPY7RU.N01v7C})
+		D.PoolAt50961D8.Put(seg.mzrzt1uBj)
+		s.sendControl(&IqB1foHWg{Rf6N7kY6GVCs: 4, HNaaDh: seg.jaPY7RU.HNaaDh, Tt1OfazA: seg.jaPY7RU.N01v7C}, nil, true)
 	}
 	return nil
 }
 func (s *WMK1ddta3da) fTCBPKK(stream *xjTVP8) { //0x1c56000
 	if _, ok := s.aAwbr_m35W.jJn3FR6HBm5A(stream.xIwb7TaM); ok {
-		s.pZaZ0uHV2KJ.WriteSessionSegment(&IqB1foHWg{Rf6N7kY6GVCs: 4, HNaaDh: stream.xIwb7TaM, Tt1OfazA: stream.qYZ2Uu.Add(1) - 1})
+		s.sendControl(&IqB1foHWg{Rf6N7kY6GVCs: 4, HNaaDh: stream.xIwb7TaM, Tt1OfazA: stream.qYZ2Uu.Add(1) - 1}, nil, false)
 	}
 }

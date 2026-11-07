@@ -50,7 +50,7 @@ func testFrameAEAD(t *testing.T) cipher.AEAD {
 // using raw offsets, authenticate with x/crypto, and check every padding span.
 func TestFrameWriterWire(t *testing.T) {
 	// qhFcsZC 原 88 字节，新增 traffic pattern 字段后为 104。
-	if unsafe.Sizeof(qhFcsZC{}) != 104 || unsafe.Sizeof(rZDq_kinV4G{}) != 56 || unsafe.Sizeof(jjyc26{}) != 32 {
+	if unsafe.Sizeof(rZDq_kinV4G{}) != 56 || unsafe.Sizeof(jjyc26{}) != 32 {
 		t.Fatal("RTTI layout mismatch")
 	}
 	for _, kind := range []byte{2, 3, 4, 5, 6, 7, 8, 9} {

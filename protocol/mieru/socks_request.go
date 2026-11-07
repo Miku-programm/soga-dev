@@ -91,5 +91,8 @@ func (t *TZ3YCqW) Accept() (conn J.Ki8urSHTx44, err error) { //0x1c364c0; cleanu
 func (t *TZ3YCqW) hTInzJrFcBf(status byte) error { //0x1c369c0
 	b := [10]byte{5, status, 0, 1}
 	s := t.j_Ra2Blepbh
+	if err := s.waitOpened(); err != nil {
+		return err
+	}
 	return s.kmcW3r.WriteDataSegment(&IqB1foHWg{Rf6N7kY6GVCs: 7, HNaaDh: s.xIwb7TaM, Tt1OfazA: s.qYZ2Uu.Add(1) - 1, UlMT6MeaV2: 4096}, b[:])
 }

@@ -14,8 +14,18 @@ import (
 	"time"
 )
 
-// xjTVP8 retains original 184-byte RTTI 0x371a870 and separate residual/owned
-// slices. Close signals the stream; Free returns its owned buffers separately.
+// streamRecvBudget 是单个会话在服务端排队等待读取的最大字节数。超出后会话读循环
+// 才对该会话施加背压；预算要足够大，避免一个暂未被读取的会话（例如仍在拨号目标）
+// 很快卡住整条底层连接上的所有会话。
+const streamRecvBudget = 4 << 20
+
+// streamRecvSlots 是接收队列的帧数上限，与官方 mieru 的 recvChan 同量级。
+const streamRecvSlots = 1024
+
+// openedAlready 用于不经过会话创建的流（测试等），它们无需等待 openSessionResponse。
+var openedAlready = func() chan struct{} { c := make(chan struct{}); close(c); return c }()
+
+// xjTVP8: Close signals the stream; Free returns its owned buffers separately.
 type xjTVP8 struct {
 	xIwb7TaM     uint32
 	tduCFDwT     U.PgaNd3014U
@@ -32,10 +42,17 @@ type xjTVP8 struct {
 	cf9qwXK6I5K2 atomic.Int64
 	a8D7t3SKMs5P sync.Once
 	zhIY4QEke    chan struct{}
+	// opened 在 openSessionResponse 写出后关闭；在此之前不能写出该会话的数据帧。
+	opened chan struct{}
+	// done 是所属会话的结束信号。
+	done <-chan struct{}
+	// queued 是已投递但尚未被读取的字节数，drained 在读取后通知投递方。
+	queued  atomic.Int64
+	drained chan struct{}
 }
 
 func vnqzugKQF1jX(id uint32, user U.PgaNd3014U, conn net.Conn, writer *qhFcsZC) *xjTVP8 { //0x1c37f20
-	v := &xjTVP8{xIwb7TaM: id, tduCFDwT: user, xfdnp9xA: make(chan []byte, 64), lnAkdLIFF: conn, kmcW3r: writer, zhIY4QEke: make(chan struct{})}
+	v := &xjTVP8{xIwb7TaM: id, tduCFDwT: user, xfdnp9xA: make(chan []byte, streamRecvSlots), lnAkdLIFF: conn, kmcW3r: writer, zhIY4QEke: make(chan struct{}), opened: openedAlready, drained: make(chan struct{}, 1)}
 	if user != nil {
 		v.gUoJvESp = user.GetCtx()
 	}
@@ -115,7 +132,60 @@ func (v *xjTVP8) Write(b []byte) (int, error) { //0x1c38860
 	}
 	return v.e91JivRNgi(b)
 }
+
+// deliver 由会话读循环调用，把客户端数据交给本会话。排队字节超过预算时阻塞，
+// 直到本会话被读取、关闭或会话结束；返回 false 时 payload 已归还缓冲池。
+func (v *xjTVP8) deliver(payload []byte) bool {
+	n := int64(len(payload))
+	for {
+		queued := v.queued.Load()
+		if queued <= 0 || queued+n <= streamRecvBudget {
+			break
+		}
+		select {
+		case <-v.drained:
+		case <-v.zhIY4QEke:
+			D.PoolAt50961D8.Put(payload)
+			return false
+		case <-v.done:
+			D.PoolAt50961D8.Put(payload)
+			return false
+		}
+	}
+	v.queued.Add(n)
+	select {
+	case v.xfdnp9xA <- payload:
+		return true
+	case <-v.zhIY4QEke:
+	case <-v.done:
+	}
+	v.queued.Add(-n)
+	D.PoolAt50961D8.Put(payload)
+	return false
+}
+
+// waitOpened 等待 openSessionResponse 写出，保证客户端先收到会话确认再收到数据。
+func (v *xjTVP8) waitOpened() error {
+	select {
+	case <-v.opened:
+	case <-v.zhIY4QEke:
+		return io.ErrClosedPipe
+	case <-v.done:
+		return io.ErrClosedPipe
+	}
+	select {
+	case <-v.zhIY4QEke:
+		// 客户端已关闭会话，不再为它发送数据。
+		return io.ErrClosedPipe
+	default:
+		return nil
+	}
+}
+
 func (v *xjTVP8) e91JivRNgi(b []byte) (int, error) { //0x1c38920
+	if err := v.waitOpened(); err != nil {
+		return 0, err
+	}
 	total := len(b)
 	for len(b) > 0 {
 		seq := v.qYZ2Uu.Add(1) - 1
@@ -161,6 +231,11 @@ func (v *xjTVP8) u8WQklo(b []byte) (int, error) {
 	case data, ok := <-v.xfdnp9xA:
 		if !ok {
 			return 0, io.EOF
+		}
+		v.queued.Add(-int64(len(data)))
+		select {
+		case v.drained <- struct{}{}:
+		default:
 		}
 		n := copy(b, data)
 		if n >= len(data) {

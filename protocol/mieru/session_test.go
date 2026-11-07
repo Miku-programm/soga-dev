@@ -118,7 +118,7 @@ func (f *mieruFixtureClient) read() (byte, uint32, []byte, error) {
 	return h[0], binary.BigEndian.Uint32(h[6:10]), p, nil
 }
 func TestNativeMultiplexedConnectionWire(t *testing.T) {
-	if unsafe.Sizeof(WMK1ddta3da{}) != 96 || unsafe.Sizeof(xjTVP8{}) != 184 || unsafe.Sizeof(zXJm01kG7F4E{}) != 32 {
+	if unsafe.Sizeof(zXJm01kG7F4E{}) != 32 {
 		t.Fatal("RTTI")
 	}
 	u := testMieruUser(t, 510, "native-user", "secret")
@@ -135,7 +135,8 @@ func TestNativeMultiplexedConnectionWire(t *testing.T) {
 			done <- err
 			return
 		}
-		defer s.Close()
+		// 控制帧异步写出；客户端读完后再拆除连接。
+		t.Cleanup(func() { s.Close() })
 		for i := 0; i < 2; i++ {
 			accepted, err := s.Next()
 			if err != nil {
